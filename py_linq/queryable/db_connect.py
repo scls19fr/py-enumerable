@@ -5,13 +5,14 @@ import sqlite3
 from py_linq.exceptions import NullArgumentError, InvalidArgumentError
 
 
-class DbConnectionBase(object):
+class IDbConnection(object):
     __metaclass__ = abc.ABCMeta
     _conn_uri = None
     _host = None
     _user = None
     _pwd = None
     _db_uri = None
+    _provider = None
 
     def __init__(self, connection_uri):
         """
@@ -22,6 +23,7 @@ class DbConnectionBase(object):
         """
         self._conn_uri = connection_uri
         self.parse_uri()
+        self.__setattr__("__provider__", self.provider_name)
 
     @property
     def connection_uri(self):
@@ -43,13 +45,17 @@ class DbConnectionBase(object):
     def database_uri(self):
         return self._db_uri
 
+    @property
+    def provider_name(self):
+        return self._provider
+
     @abc.abstractproperty
-    def provider(self):
+    def driver(self):
         """
         Returns the provider determined by connection string
         :return: provider object
         """
-        return
+        return NotImplementedError()
 
     @abc.abstractmethod
     def parse_uri(self):
@@ -59,8 +65,10 @@ class DbConnectionBase(object):
         """
         if self.connection_uri is None:
             raise NullArgumentError("No connection uri")
-        if not ':' in self.connection_uri or len(self.connection_uri.split(':')) == 2:
+        connection_split = self.connection_uri.split(':')
+        if not ':' in self.connection_uri or len(connection_split) == 2:
             raise InvalidArgumentError("{0} is not a valid connection uri".format(self.connection_uri))
+        self._provider = connection_split[0]
         return
 
     @abc.abstractproperty
@@ -69,11 +77,23 @@ class DbConnectionBase(object):
         The connection to the database
         :return: connection object
         """
-        return
+        return NotImplementedError()
 
-class SqliteDbConnection(DbConnectionBase):
+class DbConnectionBase(IDbConnection):
     @property
-    def provider(self):
+    def driver(self):
+        return None
+
+    @property
+    def connection(self):
+        return None
+
+    def parse_uri(self):
+        super(DbConnectionBase, self).parse_uri()
+
+class SqliteDbConnection(IDbConnection):
+    @property
+    def driver(self):
         return sqlite3
 
     @property
