@@ -11,3 +11,6 @@ class NoMatchingElement(Exception):
 
 class MoreThanOneMatchingElement(Exception):
     pass
+
+class InvalidArgumentError(Exception):
+    pass
