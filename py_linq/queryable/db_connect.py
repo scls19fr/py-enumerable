@@ -2,17 +2,16 @@ __author__ = 'ViraLogic Software'
 
 import abc
 import sqlite3
-from py_linq.exceptions import NullArgumentError, InvalidArgumentError
 
 
-class IDbConnection(object):
+class DbConnectionBase(object):
     __metaclass__ = abc.ABCMeta
     _conn_uri = None
     _host = None
     _user = None
     _pwd = None
     _db_uri = None
-    _provider = None
+    _conn = None
 
     def __init__(self, connection_uri):
         """
@@ -23,7 +22,6 @@ class IDbConnection(object):
         """
         self._conn_uri = connection_uri
         self.parse_uri()
-        self.__setattr__("__provider__", self.provider_name)
 
     @property
     def connection_uri(self):
@@ -47,7 +45,10 @@ class IDbConnection(object):
 
     @property
     def provider_name(self):
-        return self._provider
+        try:
+            return self.__dict__['__provider_name__']
+        except KeyError:
+            return None
 
     @abc.abstractproperty
     def driver(self):
@@ -63,44 +64,68 @@ class IDbConnection(object):
         Parses the connection uri to set host, user, password, and database uri
         :return: void
         """
-        if self.connection_uri is None:
-            raise NullArgumentError("No connection uri")
-        connection_split = self.connection_uri.split(':')
-        if not ':' in self.connection_uri or len(connection_split) == 2:
-            raise InvalidArgumentError("{0} is not a valid connection uri".format(self.connection_uri))
-        self._provider = connection_split[0]
-        return
+        raise NotImplementedError()
 
     @abc.abstractproperty
     def connection(self):
         """
-        The connection to the database
+        Opens the connection to the database
         :return: connection object
         """
         return NotImplementedError()
 
-class DbConnectionBase(IDbConnection):
-    @property
-    def driver(self):
-        return None
+    @abc.abstractmethod
+    def close(self):
+        """
+        Closes the connection to the database
+        :return: void
+        """
+        return NotImplementedError()
 
-    @property
-    def connection(self):
-        return None
+    @abc.abstractmethod
+    def execute(self, sql):
+        """
+        Sends the given sql statement to database
+        :param sql: sql statement as string
+        :return: database result
+        """
+        return NotImplementedError()
 
-    def parse_uri(self):
-        super(DbConnectionBase, self).parse_uri()
+    @abc.abstractmethod
+    def commit(self):
+        """
+        Commits changes to database
+        :return: void
+        """
+        return NotImplementedError()
 
-class SqliteDbConnection(IDbConnection):
+
+class SqliteDbConnection(DbConnectionBase):
+    __provider_name__ = 'sqlite'
+
+    def __init__(self, connection_uri):
+        super(SqliteDbConnection, self).__init__(connection_uri)
+
     @property
     def driver(self):
         return sqlite3
 
     @property
     def connection(self):
-        return self.provider.connect(self.database_uri)
+        if self._conn is None:
+            self._conn = self.driver.connect(self.database_uri)
+        return self._conn
 
     def parse_uri(self):
-        super(SqliteDbConnection, self).parse_uri()
         self._host = self._user = self._pwd = ''
         self._db_uri = self.connection_uri.split(':')[1]
+
+    def close(self):
+        if self._conn is not None:
+            self._conn.close()
+
+    def execute(self, sql):
+        return self.connection.execute(sql)
+
+    def commit(self):
+        return self.connection.commit()

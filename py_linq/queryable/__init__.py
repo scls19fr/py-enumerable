@@ -1,3 +1,3 @@
 __author__ = 'bwfenske'
 
-from connection_manager import ConnectionManager
+from py_linq.queryable.connection_manager import ConnectionManager
