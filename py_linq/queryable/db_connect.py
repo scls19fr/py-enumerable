@@ -5,6 +5,9 @@ import sqlite3
 
 
 class DbConnectionBase(object):
+    """
+    Abstract database provider implementation. Assumes PEP 249 standard DB-API driver is used.
+    """
     __metaclass__ = abc.ABCMeta
     _conn_uri = None
     _host = None
@@ -74,31 +77,6 @@ class DbConnectionBase(object):
         """
         return NotImplementedError()
 
-    @abc.abstractmethod
-    def close(self):
-        """
-        Closes the connection to the database
-        :return: void
-        """
-        return NotImplementedError()
-
-    @abc.abstractmethod
-    def execute(self, sql):
-        """
-        Sends the given sql statement to database
-        :param sql: sql statement as string
-        :return: database result
-        """
-        return NotImplementedError()
-
-    @abc.abstractmethod
-    def commit(self):
-        """
-        Commits changes to database
-        :return: void
-        """
-        return NotImplementedError()
-
 
 class SqliteDbConnection(DbConnectionBase):
     __provider_name__ = 'sqlite'
@@ -119,13 +97,3 @@ class SqliteDbConnection(DbConnectionBase):
     def parse_uri(self):
         self._host = self._user = self._pwd = ''
         self._db_uri = self.connection_uri.split(':')[1]
-
-    def close(self):
-        if self._conn is not None:
-            self._conn.close()
-
-    def execute(self, sql):
-        return self.connection.execute(sql)
-
-    def commit(self):
-        return self.connection.commit()
