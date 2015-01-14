@@ -2,19 +2,15 @@ __author__ = 'ViraLogic Software'
 
 import abc
 import sqlite3
-
+from py_linq.queryable.parsers import SqliteUriParser
 
 class DbConnectionBase(object):
     """
     Abstract database provider implementation. Assumes PEP 249 standard DB-API driver is used.
     """
     __metaclass__ = abc.ABCMeta
-    _conn_uri = None
-    _host = None
-    _user = None
-    _pwd = None
-    _db_uri = None
     _conn = None
+    _provider_config = None
 
     def __init__(self, connection_uri):
         """
@@ -23,35 +19,24 @@ class DbConnectionBase(object):
         (http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html)
         :return: void
         """
-        self._conn_uri = connection_uri
-        self.parse_uri()
+        self.connection_uri = connection_uri
 
     @property
-    def connection_uri(self):
-        return self._conn_uri
-
-    @property
-    def host(self):
-        return self._host
-
-    @property
-    def user(self):
-        return self._user
-
-    @property
-    def password(self):
-        return self._pwd
-
-    @property
-    def database_uri(self):
-        return self._db_uri
+    def provider_config(self):
+        """
+        Returns the provider config property
+        :return: ProviderConfig instance
+        """
+        if self._provider_config is None:
+            raise AttributeError("Provider not configured")
+        return self._provider_config
 
     @property
     def provider_name(self):
         try:
             return self.__dict__['__provider_name__']
         except KeyError:
-            return None
+            raise KeyError("No __provider_name__ attribute found")
 
     @abc.abstractproperty
     def driver(self):
@@ -60,14 +45,6 @@ class DbConnectionBase(object):
         :return: provider object
         """
         return NotImplementedError()
-
-    @abc.abstractmethod
-    def parse_uri(self):
-        """
-        Parses the connection uri to set host, user, password, and database uri
-        :return: void
-        """
-        raise NotImplementedError()
 
     @abc.abstractproperty
     def connection(self):
@@ -83,6 +60,7 @@ class SqliteDbConnection(DbConnectionBase):
 
     def __init__(self, connection_uri):
         super(SqliteDbConnection, self).__init__(connection_uri)
+        self._provider_config = SqliteUriParser(connection_uri).parse_uri()
 
     @property
     def driver(self):
@@ -91,9 +69,5 @@ class SqliteDbConnection(DbConnectionBase):
     @property
     def connection(self):
         if self._conn is None:
-            self._conn = self.driver.connect(self.database_uri)
+            self._conn = self.driver.connect(self.provider_config.db_uri)
         return self._conn
-
-    def parse_uri(self):
-        self._host = self._user = self._pwd = ''
-        self._db_uri = self.connection_uri.split(':')[1]

@@ -1,8 +1,8 @@
 __author__ = 'ViraLogic Software'
 
 import inspect
-import db_connect
-from db_connect import *
+import providers
+from providers import *
 from py_linq.exceptions import *
 
 
@@ -12,7 +12,7 @@ class ConnectionManager(object):
     """
 
     @staticmethod
-    def get_provider_name(self, connection_uri):
+    def get_provider_name(connection_uri):
         """
         Gets provider name from connection uri
         :param connection_uri: connection uri as string
@@ -21,8 +21,8 @@ class ConnectionManager(object):
         if connection_uri is None:
             raise NullArgumentError("No connection uri")
         connection_split = connection_uri.split(':')
-        if not ':' in self.connection_uri or len(connection_split) == 2:
-            raise InvalidArgumentError("{0} is not a valid connection uri".format(self.connection_uri))
+        if ':' not in connection_uri or len(connection_split) != 2:
+            raise InvalidArgumentError("{0} is not a valid connection uri".format(connection_uri))
         return connection_split[0]
 
     @staticmethod
@@ -33,7 +33,7 @@ class ConnectionManager(object):
         """
         connections = [
             cls
-            for name, cls in inspect.getmembers(db_connect)
+            for name, cls in inspect.getmembers(providers)
             if inspect.isclass(cls)
             and hasattr(cls, '__provider_name__')
             and issubclass(cls, DbConnectionBase)
@@ -44,7 +44,7 @@ class ConnectionManager(object):
         return result
 
     @staticmethod
-    def get_connection(self, connection_string):
+    def get_connection(connection_string):
         """
         Gets the appropriate connection
         :param connection_string: connection string
