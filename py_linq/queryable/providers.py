@@ -56,8 +56,6 @@ class DbConnectionBase(object):
 
 
 class SqliteDbConnection(DbConnectionBase):
-    __provider_name__ = 'sqlite'
-
     def __init__(self, connection_uri):
         super(SqliteDbConnection, self).__init__(connection_uri)
         self._provider_config = SqliteUriParser(connection_uri).parse_uri()

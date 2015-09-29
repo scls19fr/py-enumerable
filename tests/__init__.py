@@ -27,3 +27,5 @@ _locations = [('Scotland', 'Edinburgh', 'Branch1', 20000),
              ('England', 'Manchester', 'Branch2', 50000),
              ('England', 'Liverpool', 'Branch1', 29700),
              ('England', 'Liverpool', 'Branch2', 25000)]
+
+_sqlite_db_path = 'sqlite:tests/sqlite_test.db'

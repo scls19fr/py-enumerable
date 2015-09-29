@@ -4,7 +4,8 @@ import unittest
 
 testclasses = [
     'tests.Constructor',
-    'tests.Functions'
+    'tests.Functions',
+    'tests.SqliteConnection'
 ]
 suite = unittest.TestLoader().loadTestsFromNames(testclasses)
 unittest.TextTestRunner(verbosity=2).run(suite)

@@ -6,7 +6,8 @@ class ProviderConfig(object):
     """
     Class that holds parameters for database connection provider
     """
-    def __init__(self, host, user, password, db_uri):
+    def __init__(self, provider_name, host, user, password, db_uri):
+        self.provider_name = provider_name
         self.host = host
         self.user = user
         self.password = password
@@ -37,6 +38,8 @@ class SqliteUriParser(UriParserBase):
     Implementation of UriParserBase for Sqlite
     """
     def parse_uri(self):
-        return ProviderConfig('', '', '', self.connection_uri.split(':')[1])
+        return ProviderConfig(self.connection_uri.split(':')[0], '', '', '', self.connection_uri.split(':')[1])
+
+
 
 
