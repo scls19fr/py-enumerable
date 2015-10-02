@@ -34,7 +34,7 @@ class DbConnectionBase(object):
     @property
     def provider_name(self):
         try:
-            return self.__dict__['__provider_name__']
+            return getattr(self, '__provider_name__')
         except KeyError:
             raise KeyError("No __provider_name__ attribute found")
 
@@ -56,6 +56,8 @@ class DbConnectionBase(object):
 
 
 class SqliteDbConnection(DbConnectionBase):
+    __provider_name__ = 'sqlite' # This attribute is used as a hook for the ConnectionManager to find it
+
     def __init__(self, connection_uri):
         super(SqliteDbConnection, self).__init__(connection_uri)
         self._provider_config = SqliteUriParser(connection_uri).parse_uri()
