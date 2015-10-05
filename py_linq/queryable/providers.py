@@ -2,7 +2,11 @@ __author__ = 'ViraLogic Software'
 
 import abc
 import sqlite3
-from py_linq.queryable.parsers import SqliteUriParser
+from decimal import Decimal
+from .parsers import SqliteUriParser
+from .entity.model import Model
+from ..exceptions import InvalidArgumentError
+
 
 class DbConnectionBase(object):
     """
@@ -54,9 +58,27 @@ class DbConnectionBase(object):
         """
         return NotImplementedError()
 
+    @abc.abstractproperty
+    def provider_data_types(self):
+        """
+        Gets a mapping of Python type to its representation in the database
+        :return: dictionary of <python type, database type mapping>
+        """
+        return NotImplementedError()
+
+    @abc.abstractmethod
+    def create_table(self, model):
+        """
+        Generates SQL statement to create a table given a data model
+        :param model: An child of a py_linq.queryable.entity.model.Model
+        :return: sql statement as text
+        """
+        return NotImplementedError()
+
+
 
 class SqliteDbConnection(DbConnectionBase):
-    __provider_name__ = 'sqlite' # This attribute is used as a hook for the ConnectionManager to find it
+    __provider_name__ = u'sqlite'  # This attribute is used as a hook for the ConnectionManager to find it
 
     def __init__(self, connection_uri):
         super(SqliteDbConnection, self).__init__(connection_uri)
@@ -71,3 +93,16 @@ class SqliteDbConnection(DbConnectionBase):
         if self._conn is None:
             self._conn = self.driver.connect(self.provider_config.db_uri)
         return self._conn
+
+    @property
+    def provider_data_types(self):
+        return {
+            int: 'INTEGER',
+            unicode: 'TEXT',
+            float: 'REAL',
+            Decimal: 'NUMERIC',
+            bytes: 'BLOB'
+        }
+
+    def create_table(self, model):
+        return NotImplementedError()

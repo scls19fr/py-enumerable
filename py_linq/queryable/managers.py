@@ -19,10 +19,10 @@ class ConnectionManager(object):
         :return: boolean
         """
         if connection_uri is None:
-            raise NullArgumentError("No connection uri")
+            raise NullArgumentError(u"No connection uri")
         connection_split = connection_uri.split(':')
         if ':' not in connection_uri or len(connection_split) != 2:
-            raise InvalidArgumentError("{0} is not a valid connection uri".format(connection_uri))
+            raise InvalidArgumentError(u"{0} is not a valid connection uri".format(connection_uri))
         return connection_split[0]
 
     @staticmethod

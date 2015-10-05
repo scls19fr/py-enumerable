@@ -2,6 +2,7 @@ __author__ = 'ViraLogic Software'
 
 import abc
 
+
 class ProviderConfig(object):
     """
     Class that holds parameters for database connection provider
@@ -11,6 +12,7 @@ class ProviderConfig(object):
         self.user = user
         self.password = password
         self.db_uri = db_uri
+
 
 class UriParserBase(object):
     __metaclass__ = abc.ABCMeta
@@ -32,12 +34,13 @@ class UriParserBase(object):
         """
         raise NotImplementedError()
 
+
 class SqliteUriParser(UriParserBase):
     """
     Implementation of UriParserBase for Sqlite
     """
     def parse_uri(self):
-        return ProviderConfig('', '', '', self.connection_uri.split(':')[1])
+        return ProviderConfig(u'', u'', u'', self.connection_uri.split(':')[1])
 
 
 

@@ -1,9 +1,5 @@
 __author__ = 'Viralogic Software'
 
-
-from py_linq.queryable.entity.model import Model, Column
-
-
 _empty = []
 _simple = [1, 2, 3]
 _complex = [
@@ -32,13 +28,4 @@ _locations = [('Scotland', 'Edinburgh', 'Branch1', 20000),
              ('England', 'Liverpool', 'Branch1', 29700),
              ('England', 'Liverpool', 'Branch2', 25000)]
 
-_sqlite_db_path = 'sqlite:tests/sqlite_test.db'
-
-class TestModel(Model):
-    __table_name__ = 'test_table'
-
-    test_int_column = Column(int, 'int_column')
-
-class TestModel2(Model):
-    __table_name__ = 'test_table'
-    test_int_column = Column(int)
+_sqlite_db_path = u'sqlite:tests/sqlite_test.db'
