@@ -97,12 +97,19 @@ class SqliteDbConnection(DbConnectionBase):
     @property
     def provider_data_types(self):
         return {
-            int: 'INTEGER',
-            unicode: 'TEXT',
-            float: 'REAL',
-            Decimal: 'NUMERIC',
-            bytes: 'BLOB'
+            int: u'INTEGER',
+            unicode: u'TEXT',
+            float: u'REAL',
+            Decimal: u'NUMERIC',
+            bytes: u'BLOB'
         }
 
     def create_table(self, model):
-        return NotImplementedError()
+        try:
+            columns = model.inspect_columns()
+        except:
+            raise InvalidArgumentError("Does not appear to be a proper data model that inherits from Model")
+        sql = u"CREATE TABLE([COLUMNS]);"
+        columns_sql = u",".join([col[1].generate_col_sql(self, col[0]) for col in columns])
+        sql = sql.replace(u"[COLUMNS]", columns_sql)
+        return sql

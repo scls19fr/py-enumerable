@@ -289,7 +289,6 @@ class TestFunctions(TestCase):
             self.assertEqual(collection[0], i + 1, "Value of first element should equal {0}".format(i + 1))
 
         simple_gj = self.simple.group_join(Enumerable([2,3]), result_func=lambda (x, y): {'number': x, 'collection': y}).to_list()
-        print simple_gj
         self.assertEqual(len(simple_gj), 3, "Should be 3 elements")
         for i, e in enumerate(simple_gj):
             self.assertEqual(e['number'], i + 1, "number property should be {0}".format(i + 1))

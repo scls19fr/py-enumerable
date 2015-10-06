@@ -7,7 +7,8 @@ from tests import _sqlite_db_path
 from py_linq.queryable.providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
-from py_linq.queryable.entity.model import Model, Column
+from py_linq.queryable.entity.model import Model
+from py_linq.queryable.entity.column_types import Column
 
 
 class TestSqlite(TestCase):
@@ -50,9 +51,9 @@ class TestModelClass(TestCase):
         self.assertEqual(1, num_columns)
 
     def test_int_column(self):
-        self.assertEqual(TestModel.test_int_column.column_name, 'int_column')
-        self.assertEqual(TestModel.test_int_column.column_type, type(int))
+        self.assertEqual(TestModel.test_int_column.column_name, u'int_column')
+        self.assertEqual(TestModel.test_int_column.column_type, int)
 
         name, col = TestModel2.inspect_columns()[0]
-        self.assertEqual(name, 'test_int_column')
-        self.assertEqual(TestModel2.test_int_column.column_type, type(int))
+        self.assertEqual(name, u'test_int_column')
+        self.assertEqual(TestModel2.test_int_column.column_type, int)
