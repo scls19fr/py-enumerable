@@ -109,7 +109,30 @@ class SqliteDbConnection(DbConnectionBase):
             columns = model.inspect_columns()
         except:
             raise InvalidArgumentError("Does not appear to be a proper data model that inherits from Model")
-        sql = u"CREATE TABLE([COLUMNS]);"
-        columns_sql = u",".join([col[1].generate_col_sql(self, col[0]) for col in columns])
+        sql = u"CREATE TABLE {0} ([COLUMNS]);".format(model.table_name())
+        columns_sql = u", ".join([self._generate_col_sql(col[0], col[1]) for col in columns])
         sql = sql.replace(u"[COLUMNS]", columns_sql)
+        #TODO: Add indexing for unique columns here
+        return sql
+
+    def _generate_col_sql(self, column_name, column):
+        """
+        :param provider: A DbConnectionBase type
+        :return: SQL statement for column as text
+        """
+        try:
+            column_type = self.provider_data_types[column.column_type]
+        except KeyError:
+            raise KeyError(u"{0} is not a valid column data type".format(column_type))
+        sql = u"{0} {1}".format(column_name, column_type)
+        sql = u"{0} NULL".format(sql) if column.is_nullable else u"{0} NOT NULL".format(sql)
+        if column.is_primary_key:
+            sql = u"{0} PRIMARY KEY".format(sql)
+        if column.is_unique and not column.is_primary_key:
+            sql = u"{0} UNIQUE".format(sql)
+        #TODO: Add foreign key syntax here
+        if column.foreign_key is not None:
+            #print column.foreign_key
+            #print column.foreign_column
+            sql = u"{0}, FOREIGN KEY({1}) REFERENCES {2}({3})".format(sql, column_name, column.foreign_key.table_name(), column.foreign_column.column_name)
         return sql

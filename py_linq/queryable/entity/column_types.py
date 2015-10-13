@@ -1,8 +1,11 @@
 __author__ = 'Bruce.Fenske'
 
+from ...py_linq import Enumerable
+from ...exceptions import InvalidArgumentError
+
 class Column(object):
 
-    def __init__(self, column_type, column_name=None, foreign_key=None, is_primary_key=False, is_nullable=False, is_unique=False):
+    def __init__(self, column_type, column_name=None, foreign_key=None, is_primary_key=False, is_nullable=True, is_unique=False):
         self._column_name = unicode(column_name) if column_name is not None else None
         self._column_type = column_type
         self._foreign_key = foreign_key
@@ -21,8 +24,8 @@ class Column(object):
         return self._column_name
 
     @property
-    def has_foreign_key(self):
-        return self._foreign_key != None
+    def foreign_key(self):
+        return self._foreign_key
 
     @property
     def is_primary_key(self):
@@ -36,25 +39,19 @@ class Column(object):
     def is_unique(self):
         return self._is_unique
 
-    def generate_col_sql(self, provider, column_name):
-        """
-        :param provider: A DbConnectionBase type
-        :return: SQL statement for column as text
-        """
-        try:
-            column_type = provider.provider_data_types[self.column_type]
-        except KeyError:
-            raise KeyError(u"{0} is not a valid column data type".format(self.column_type))
-        sql = u"{0} {1}".format(column_name, column_type)
-        sql = u"{0} NULL".format(sql) if self.is_nullable else u"{0} NOT NULL".format(sql)
-        if self.is_primary_key:
-            sql = u"{0} PRIMARY KEY".format(sql)
-        if self.is_unique and not self.is_primary_key:
-            sql = u"{0} UNIQUE".format(sql)
-        #TODO: Add foreign key syntax here
-        return sql
-
 
 class PrimaryKey(Column):
-    def __init__(self, column_type, column_name):
-        super(self, Column).__init__(column_type, column_name, foreign_key=False, is_primary_key=True, is_nullable=False, is_unique=False)
+    def __init__(self, column_type, column_name=None):
+        super(PrimaryKey, self).__init__(column_type, column_name, foreign_key=None, is_primary_key=True, is_nullable=False, is_unique=False)
+
+class ForeignKey(Column):
+    def __init__(self, model, column_name=None, is_nullable=True, is_unique=False):
+        pk_column = Enumerable(model.inspect_columns()).single_or_default(lambda c: c[1].is_primary_key)
+        if pk_column is None:
+            raise InvalidArgumentError(u"No primary key found for {0}".format(model.table_name()))
+        self._pk_column = pk_column[1]
+        super(ForeignKey, self).__init__(self._pk_column.column_type, column_name, foreign_key=model, is_primary_key=False, is_nullable=is_nullable, is_unique=is_unique)
+
+    @property
+    def foreign_column(self):
+        return self._pk_column

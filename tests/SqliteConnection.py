@@ -7,8 +7,7 @@ from tests import _sqlite_db_path
 from py_linq.queryable.providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
-from py_linq.queryable.entity.model import Model
-from py_linq.queryable.entity.column_types import Column
+from .TestModels import TestModel, TestModel2, TestPrimary, TestIntUnique, TestForeignKey
 
 
 class TestSqlite(TestCase):
@@ -26,6 +25,37 @@ class TestSqlite(TestCase):
         self.conn = ConnectionManager.get_connection(self.path)
         self.test_connection()
 
+    def test_create_table_int(self):
+        sql_testModel = u"CREATE TABLE {0} (int_column INTEGER NULL);".format(TestModel.table_name()).lower()
+        sql_testModel2 = u"CREATE TABLE {0} (test_int_column INTEGER NULL);".format(TestModel2.table_name()).lower()
+
+        self.assertEqual(self.conn.create_table(TestModel).lower(), sql_testModel)
+        self.assertEqual(self.conn.create_table(TestModel2).lower(), sql_testModel2)
+
+    def test_create_pk(self):
+        sql_testModel = u"CREATE TABLE {0} (int_pk INTEGER NOT NULL PRIMARY KEY);".format(TestPrimary.table_name()).lower()
+        self.assertEqual(self.conn.create_table(TestPrimary).lower(), sql_testModel)
+
+    def test_create_unique(self):
+        sql_testModel = u"CREATE TABLE {0} (int_column INTEGER NULL UNIQUE);".format(TestIntUnique.table_name()).lower()
+        self.assertEqual(self.conn.create_table(TestIntUnique).lower(), sql_testModel)
+
+    def test_foreign_key(self):
+        sql_testForeignKey = [u"int_pk INTEGER NOT NULL PRIMARY KEY".lower(), u"test_fk INTEGER NOT NULL, FOREIGN KEY(test_fk) REFERENCES test_table(int_pk)".lower()]
+        for col_name, col in TestForeignKey.inspect_columns():
+            self.assertIn(self.conn._generate_col_sql(col_name, col).lower(), sql_testForeignKey)
+
+    def test_table_creation(self):
+        sql = self.conn.create_table(TestPrimary)
+        self.conn.connection.execute(sql)
+
+        sql = self.conn.create_table(TestForeignKey)
+        print sql
+        self.conn.connection.execute(sql)
+
+        self.conn.connection.commit()
+
+
     def tearDown(self):
         if self.conn is not None:
             self.conn.connection.close()
@@ -34,15 +64,6 @@ class TestSqlite(TestCase):
         except:
             pass
 
-
-class TestModel(Model):
-    __table_name__ = u'test_table'
-
-    test_int_column = Column(int, 'int_column')
-
-class TestModel2(Model):
-    __table_name__ = u'test_table'
-    test_int_column = Column(int)
 
 class TestModelClass(TestCase):
 
@@ -57,3 +78,4 @@ class TestModelClass(TestCase):
         name, col = TestModel2.inspect_columns()[0]
         self.assertEqual(name, u'test_int_column')
         self.assertEqual(TestModel2.test_int_column.column_type, int)
+
