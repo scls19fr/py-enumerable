@@ -130,9 +130,6 @@ class SqliteDbConnection(DbConnectionBase):
             sql = u"{0} PRIMARY KEY".format(sql)
         if column.is_unique and not column.is_primary_key:
             sql = u"{0} UNIQUE".format(sql)
-        #TODO: Add foreign key syntax here
         if column.foreign_key is not None:
-            #print column.foreign_key
-            #print column.foreign_column
             sql = u"{0}, FOREIGN KEY({1}) REFERENCES {2}({3})".format(sql, column_name, column.foreign_key.table_name(), column.foreign_column.column_name)
         return sql

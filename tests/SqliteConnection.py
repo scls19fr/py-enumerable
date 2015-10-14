@@ -46,15 +46,17 @@ class TestSqlite(TestCase):
             self.assertIn(self.conn._generate_col_sql(col_name, col).lower(), sql_testForeignKey)
 
     def test_table_creation(self):
-        sql = self.conn.create_table(TestPrimary)
-        self.conn.connection.execute(sql)
-
-        sql = self.conn.create_table(TestForeignKey)
-        print sql
-        self.conn.connection.execute(sql)
-
-        self.conn.connection.commit()
-
+        try:
+            sql = self.conn.create_table(TestPrimary)
+            self.conn.connection.execute(sql)
+            sql = self.conn.create_table(TestForeignKey)
+            self.conn.connection.execute(sql)
+            self.conn.connection.commit()
+        except Exception as ex:
+            self.conn.connection.rollback()
+            raise ex
+        finally:
+            self.conn.connection.close()
 
     def tearDown(self):
         if self.conn is not None:

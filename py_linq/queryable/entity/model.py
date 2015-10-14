@@ -2,7 +2,6 @@ __author__ = 'Bruce.Fenske'
 
 import inspect
 from .column_types import Column
-from ...py_linq import Enumerable
 
 class Model(object):
 
@@ -17,9 +16,16 @@ class Model(object):
         """
         :return: list of (column_name, column instances) for the model
         """
-        columns = Enumerable([
+        columns = [
             (unicode(name), col) for name, col in inspect.getmembers(cls)
             if isinstance(col, Column)
-        ]).order_by(lambda c: c[1].is_primary_key)
+        ]
+
+        #Need to reorder the columns so that primary key is first for table creation. So just have this method
+        #return the columns in the correct order everytime.
+        pk_col = filter(lambda c: c[1].is_primary_key, columns)
+        fk_col = filter(lambda c: c[1].foreign_key is not None, columns)
+        rest = filter(lambda c: not c[1].is_primary_key and c[1].foreign_key is None, columns)
+        columns = pk_col + fk_col + rest
         return [(name if col.column_name is None else col.column_name, col) for name, col in columns]
 
