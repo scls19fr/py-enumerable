@@ -101,13 +101,31 @@ class DbConnectionBase(object):
         """
         return NotImplementedError()
 
+    @abc.abstractmethod
     def update(self, model):
         """
-        Generates SQL statement to update a table given a data model
+        Executes command to update a table given a data model
         :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
         :return: sql statement as text
         """
         return NotImplementedError()
+
+    @abc.abstractmethod
+    def add(self, model):
+        """
+        Executes command to add a record to a given table given a data model
+        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :return: void
+        """
+        return NotImplementedError()
+
+    @abc.abstractmethod
+    def delete(self, model):
+        """
+        Executes command to delete a record from a given table
+        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :return: void
+        """
 
 
 
@@ -189,4 +207,12 @@ class SqliteDbConnection(DbConnectionBase):
 
     def update(self, model):
         raise NotImplementedError()
+
+    def add(self, model):
+        raise NotImplementedError()
+
+    def delete(self, model):
+        raise NotImplementedError()
+
+
 
