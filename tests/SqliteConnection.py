@@ -25,38 +25,47 @@ class TestSqlite(TestCase):
         self.conn = ConnectionManager.get_connection(self.path)
         self.test_connection()
 
-    def test_create_table_int(self):
-        sql_testModel = u"CREATE TABLE {0} (int_column INTEGER NULL);".format(TestModel.table_name()).lower()
-        sql_testModel2 = u"CREATE TABLE {0} (test_int_column INTEGER NULL);".format(TestModel2.table_name()).lower()
-
-        self.assertEqual(self.conn.create_table(TestModel).lower(), sql_testModel)
-        self.assertEqual(self.conn.create_table(TestModel2).lower(), sql_testModel2)
-
-    def test_create_pk(self):
-        sql_testModel = u"CREATE TABLE {0} (int_pk INTEGER NOT NULL PRIMARY KEY);".format(TestPrimary.table_name()).lower()
-        self.assertEqual(self.conn.create_table(TestPrimary).lower(), sql_testModel)
-
-    def test_create_unique(self):
-        sql_testModel = u"CREATE TABLE {0} (int_column INTEGER NULL UNIQUE);".format(TestIntUnique.table_name()).lower()
-        self.assertEqual(self.conn.create_table(TestIntUnique).lower(), sql_testModel)
-
-    def test_foreign_key(self):
-        sql_testForeignKey = [u"int_pk INTEGER NOT NULL PRIMARY KEY".lower(), u"test_fk INTEGER NOT NULL, FOREIGN KEY(test_fk) REFERENCES test_table(int_pk)".lower()]
-        for col_name, col in TestForeignKey.inspect_columns():
-            self.assertIn(self.conn._generate_col_sql(col_name, col).lower(), sql_testForeignKey)
-
     def test_table_creation(self):
-        try:
-            sql = self.conn.create_table(TestPrimary)
-            self.conn.connection.execute(sql)
-            sql = self.conn.create_table(TestForeignKey)
-            self.conn.connection.execute(sql)
-            self.conn.connection.commit()
-        except Exception as ex:
-            self.conn.connection.rollback()
-            raise ex
-        finally:
-            self.conn.connection.close()
+        self.conn.create_table(TestPrimary)
+        self.conn.create_table(TestForeignKey)
+        self.conn.save_changes()
+
+        sql = u"SELECT name FROM sqlite_master WHERE type='table' AND name='{0}';"
+        sql_primary = sql.format(TestPrimary.table_name())
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql_primary)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0].lower(), TestPrimary.table_name().lower())
+
+        sql_foreign = sql.format(TestForeignKey.table_name())
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql_foreign)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0].lower(), TestForeignKey.table_name().lower())
+
+    def test_index_creation(self):
+        self.conn.create_table(TestIntUnique)
+        self.conn.create_indexes(TestIntUnique)
+        self.conn.save_changes()
+
+        sql = u"SELECT name FROM sqlite_master WHERE type = 'index' AND name='{0}';"
+        unique_column = filter(lambda c: c[1].is_unique, TestIntUnique.inspect_columns())
+        if len(unique_column) != 1:
+            raise Exception(u"Incorrect number of unique columns in {0}".format(TestIntUnique.table_name()))
+        column_name = unique_column[0][0]
+        index_name = u"{0}_index".format(column_name)
+        unique_sql = sql.format(index_name)
+        cursor = self.conn.connection.cursor()
+        cursor.execute(unique_sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0].lower(), index_name.lower())
+
 
     def tearDown(self):
         if self.conn is not None:

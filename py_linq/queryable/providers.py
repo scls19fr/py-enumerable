@@ -67,10 +67,44 @@ class DbConnectionBase(object):
         return NotImplementedError()
 
     @abc.abstractmethod
+    def save_changes(self):
+        """
+        Commits the changes to the database
+        :return: void
+        """
+        return NotImplementedError()
+
+    @abc.abstractmethod
     def create_table(self, model):
         """
         Generates SQL statement to create a table given a data model
         :param model: An child of a py_linq.queryable.entity.model.Model
+        :return: sql statement as text
+        """
+        return NotImplementedError()
+
+    @abc.abstractmethod
+    def create_indexes(self, model):
+        """
+        Executes command to create indexes on all unique columns in a data model
+        :param model: A child of py_linq.queryable.entity.model.Model
+        :return: void
+        """
+        return NotImplementedError()
+
+    @abc.abstractmethod
+    def query(self, model):
+        """
+        Generates SQL statement to query a table given a data model
+        :param model: A child of py_linq.queryable.entity.model.Model
+        :return: sql statement as text
+        """
+        return NotImplementedError()
+
+    def update(self, model):
+        """
+        Generates SQL statement to update a table given a data model
+        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
         :return: sql statement as text
         """
         return NotImplementedError()
@@ -104,16 +138,22 @@ class SqliteDbConnection(DbConnectionBase):
             bytes: u'BLOB'
         }
 
+    def save_changes(self):
+        try:
+            self.connection.commit()
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
     def create_table(self, model):
         try:
             columns = model.inspect_columns()
         except:
-            raise InvalidArgumentError("Does not appear to be a proper data model that inherits from Model")
+            raise InvalidArgumentError(u"Does not appear to be a proper data model that inherits from Model")
         sql = u"CREATE TABLE {0} ([COLUMNS]);".format(model.table_name())
         columns_sql = u", ".join([self._generate_col_sql(col[0], col[1]) for col in columns])
         sql = sql.replace(u"[COLUMNS]", columns_sql)
-        #TODO: Add indexing for unique columns here
-        return sql
+        self.connection.execute(sql)
 
     def _generate_col_sql(self, column_name, column):
         """
@@ -133,3 +173,20 @@ class SqliteDbConnection(DbConnectionBase):
         if column.foreign_key is not None:
             sql = u"{0}, FOREIGN KEY({1}) REFERENCES {2}({3})".format(sql, column_name, column.foreign_key.table_name(), column.foreign_column.column_name)
         return sql
+
+    def create_indexes(self, model):
+        try:
+            unique_columns = filter(lambda c: c[1].is_unique, model.inspect_columns())
+        except:
+            raise InvalidArgumentError(u"Does not appear to be a proper data model that inherits from Model")
+        for column_name, column in unique_columns:
+            index_name = u"{0}_index".format(column_name)
+            sql = u"CREATE INDEX {0} ON {1}({2});".format(index_name, model.table_name(), column_name)
+            self.connection.execute(sql)
+
+    def query(self, model):
+        raise NotImplementedError()
+
+    def update(self, model):
+        raise NotImplementedError()
+
