@@ -28,6 +28,8 @@ class ColumnProxy(object):
 
 
 class DynamicModelProxy(object):
+    _column_proxies = {}
+
     def __init__(self, model):
         """
         Instantiates a proxy class of a given model. This proxy class auto-adds attributes from the model and
@@ -36,24 +38,40 @@ class DynamicModelProxy(object):
         :return:
         """
         self._model = model
-        self.__add_attributes()
+        self._add_model_columns()
+
+    def __setattr__(self, key, value):
+        super(DynamicModelProxy, self).__setattr__(key, value)
+        try:
+            proxy = self.columns[key]
+        except KeyError:
+            return
+        proxy.value = value
+
 
     @property
     def model(self):
         return self._model
 
-    def __add_attributes(self):
-        attrs = {}
+    @property
+    def columns(self):
+        return self._column_proxies
+
+    def _add_model_columns(self):
         columns = [
             (unicode(name), col) for name, col in inspect.getmembers(self.model)
             if isinstance(col, Column)
         ]
-        for name, col in columns:
-            attrs.setdefault(name, ColumnProxy(col, None))
-        self.__dict__.update(attrs)
-        self.__make_properties(attrs)
+        for name,col in columns:
+            proxy = ColumnProxy(col, None)
+            self.columns.setdefault(name, proxy)
+            self.__dict__.setdefault(name, proxy.value)
 
-    def __make_properties(self, attrs):
-        for k,v in attrs:
-            raise NotImplementedError()
+
+
+
+
+
+
+
 
