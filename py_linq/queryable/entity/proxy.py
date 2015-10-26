@@ -41,12 +41,9 @@ class DynamicModelProxy(object):
         self._add_model_columns()
 
     def __setattr__(self, key, value):
+        if self.columns.has_key(key):
+            self.columns[key].value = value
         super(DynamicModelProxy, self).__setattr__(key, value)
-        try:
-            proxy = self.columns[key]
-        except KeyError:
-            return
-        proxy.value = value
 
 
     @property

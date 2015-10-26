@@ -2,8 +2,12 @@ __author__ = 'Bruce.Fenske'
 
 import inspect
 from .column_types import Column
+from .proxy import DynamicModelProxy
 
 class Model(object):
+
+    def __new__(cls, *args, **kwargs):
+        return DynamicModelProxy(cls)
 
     @classmethod
     def table_name(cls):
