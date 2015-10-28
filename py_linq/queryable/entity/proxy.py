@@ -45,6 +45,18 @@ class DynamicModelProxy(object):
             self.columns[key].value = value
         super(DynamicModelProxy, self).__setattr__(key, value)
 
+    @staticmethod
+    def create_proxy_from_model_instance(instance):
+        """
+        Creates a proxy model from an data model instance
+        :param instance: an instance of a py_linq.queryable.entity.model class
+        :return: DynamicModelProxy instance
+        """
+        proxy = DynamicModelProxy(instance.__class__)
+        for k, v in proxy.columns.iteritems():
+            if instance.__dict__.has_key(k):
+                proxy.__setattr__(k, instance.__dict__[k])
+        return proxy
 
     @property
     def model(self):

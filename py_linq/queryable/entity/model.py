@@ -6,8 +6,12 @@ from .proxy import DynamicModelProxy
 
 class Model(object):
 
-    def __new__(cls, *args, **kwargs):
-        return DynamicModelProxy(cls)
+    def __init__(self):
+        for name, value  in inspect.getmembers(self):
+            if isinstance(value, Column):
+                self.__dict__.setdefault(name, None)
+            else:
+                self.__dict__.setdefault(name, value)
 
     @classmethod
     def table_name(cls):

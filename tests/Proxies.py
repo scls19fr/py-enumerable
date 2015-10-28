@@ -9,25 +9,22 @@ from .TestModels import *
 class TestProxy(TestCase):
     def setUp(self):
         self.test_model = TestModel()
-        self.test_primary = TestPrimary()
-        self.test_foreign_key = TestForeignKey()
 
-    def test_model_instance(self):
-        self.assertIsInstance(self.test_model, DynamicModelProxy, u"Test model is not an instance of DynamicModelProxy")
-        self.assertIsInstance(self.test_primary, DynamicModelProxy, u"Test primray model is not an instance of DynamicModelProxy")
-        self.assertIsInstance(self.test_foreign_key, DynamicModelProxy, u"Test foreign key model is not an instance of DynamicModelProxy")
+    def test_set_columns(self):
+        self.test_model.test_int_column = 5
+        proxy = DynamicModelProxy.create_proxy_from_model_instance(self.test_model)
+        self.assertEqual(proxy.test_int_column, self.test_model.test_int_column)
 
-    def test_set_model_columns(self):
-        self.assertIsNone(self.test_model.test_int_column, u"test_int_column should be none")
-        self.assertIsNone(self.test_primary.test_pk, u"test_pk column should be none")
-        self.assertIsNone(self.test_foreign_key.test_pk, u"test_pk in foreign key model should be none")
-        self.assertIsNone(self.test_foreign_key.test_fk, u"test_fk column should be none")
+        self.test_model = TestModel()
+        self.test_model.test_int_column = "string"
+        self.assertRaises(InvalidArgumentError, DynamicModelProxy.create_proxy_from_model_instance, self.test_model)
 
-        try:
-            self.test_model.test_int_column = 'string'
-        except Exception as ex:
-            self.assertIsInstance(ex, InvalidArgumentError)
+        test_model1 = TestModel()
+        test_model1.test_int_column = 5
+        test_model2 = TestModel()
+        test_model2.test_int_column = 10
+        proxy1 = DynamicModelProxy.create_proxy_from_model_instance(test_model1)
+        proxy2 = DynamicModelProxy.create_proxy_from_model_instance(test_model2)
+        self.assertNotEqual(proxy1.test_int_column, proxy2.test_int_column)
 
-        self.test_model.test_int_column = 1
-        self.assertEqual(self.test_model.test_int_column, 1)
-        self.assertEqual(self.test_model.columns['test_int_column'].value, 1)
+
