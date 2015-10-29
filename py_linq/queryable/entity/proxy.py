@@ -77,6 +77,13 @@ class DynamicModelProxy(object):
             self.columns.setdefault(name, proxy)
             self.__dict__.setdefault(name, proxy.value)
 
+    def column_name(self, key):
+        try:
+            column_proxy = self.columns[key]
+        except KeyError:
+            raise InvalidArgumentError(u"No such column with key of {0}".format(key))
+        return column_proxy.column.column_name if column_proxy.column.column_name is not None or len(column_proxy.column.column_name) != 0 else key
+
 
 
 

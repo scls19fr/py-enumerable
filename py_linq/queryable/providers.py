@@ -221,8 +221,7 @@ class SqliteDbConnection(DbConnectionBase):
         columns = []
         column_values = []
         for k,v in filter(lambda c: not c[1].column.is_primary_key or (c[1].column.is_primary_key and c[1].column.column_type != int), proxy_instance.columns.iteritems()):
-            column_name = v.column.column_name if v.column.column_name is not None or len(v.column.column_name) !=0 else k
-            columns.append(column_name)
+            columns.append(proxy_instance.column_name(k))
             if v.column.column_type == unicode:
                 if v.value is None or len(v.value) == 0:
                     column_values.append(u"NULL")
