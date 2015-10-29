@@ -69,21 +69,7 @@ class TestSqlite(TestCase):
         self.assertEqual(result[0].lower(), index_name.lower())
 
     def test_insert_primary(self):
-        self.conn.create_table(TestPrimary)
-        self.conn.save_changes()
-
-        test_primary = TestPrimary()
-        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
-        test_primary.test_pk = self.conn.add(test_primary_proxy)
-        self.conn.save_changes()
-
-        sql = u"SELECT int_pk FROM test_table tt WHERE tt.int_pk = 1"
-        cursor = self.conn.connection.cursor()
-        cursor.execute(sql)
-        result = cursor.fetchone()
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result[0], test_primary.test_pk)
+        self._insert_test_primary()
 
     def test_insert_string_primary(self):
         """
@@ -108,6 +94,38 @@ class TestSqlite(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0], primary.test_pk)
         self.assertEqual(result[0], pk)
+
+    def _insert_test_primary(self):
+        self.conn.create_table(TestPrimary)
+        self.conn.save_changes()
+
+        test_primary = TestPrimary()
+        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
+        test_primary.test_pk = self.conn.add(test_primary_proxy)
+        self.conn.save_changes()
+
+        sql = u"SELECT int_pk FROM test_table tt WHERE tt.int_pk = 1"
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], test_primary.test_pk)
+        return test_primary
+
+    def test_delete(self):
+        test_primary = self._insert_test_primary()
+        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
+        self.conn.remove(test_primary_proxy)
+        self.conn.save_changes()
+
+        sql = u"SELECT COUNT(*) FROM test_table tt;"
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], 0)
 
     def tearDown(self):
         if self.conn is not None:

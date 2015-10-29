@@ -5,7 +5,7 @@ import sqlite3
 from decimal import Decimal
 from .parsers import SqliteUriParser
 from .entity.proxy import DynamicModelProxy
-from ..exceptions import InvalidArgumentError
+from ..exceptions import InvalidArgumentError, NullArgumentError
 
 
 class DbConnectionBase(object):
@@ -114,18 +114,21 @@ class DbConnectionBase(object):
     def add(self, proxy_instance):
         """
         Executes command to add a record to a given table given a data model
-        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :param proxy_instance: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
         :return: primary key
         """
         return NotImplementedError()
 
     @abc.abstractmethod
-    def delete(self, model):
+    def remove(self, proxy_instance):
         """
         Executes command to delete a record from a given table
-        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :param proxy_instance: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
         :return: void
         """
+
+    def is_valid_proxy_instance(self, instance):
+        return isinstance(instance, DynamicModelProxy)
 
 
 
@@ -215,7 +218,7 @@ class SqliteDbConnection(DbConnectionBase):
         raise NotImplementedError()
 
     def add(self, proxy_instance):
-        if not isinstance(proxy_instance, DynamicModelProxy):
+        if not self.is_valid_proxy_instance(proxy_instance):
             raise InvalidArgumentError(u"Trying to add model that is not a DynamicModelProxy")
 
         columns = []
@@ -245,8 +248,27 @@ class SqliteDbConnection(DbConnectionBase):
         cursor.execute(sql)
         return cursor.lastrowid
 
-    def delete(self, model):
-        raise NotImplementedError()
+    def remove(self, proxy_instance):
+        if not self.is_valid_proxy_instance(proxy_instance):
+            raise InvalidArgumentError(u"Trying to delete a model that is not a DynamicModelProxy")
+        primary_key = filter(lambda (k,v): v.column.is_primary_key, proxy_instance.columns.iteritems())
+        if len(primary_key) != 1:
+            raise InvalidArgumentError(u"There can only be 1 primary key associated with {0}".format(proxy_instance.model.table_name()))
+        sql = u"DELETE FROM {table_name} WHERE {primary_name} = {primary_value};"
+        primary_name = proxy_instance.column_name(primary_key[0][0])
+        primary_value = primary_key[0][1].value
+        if primary_key[0][1].column.column_type == unicode:
+            if primary_value is None or len(primary_value) == 0:
+                raise NullArgumentError(u"Primary key column {0} must have value".format(primary_name))
+            primary_value = u"'{0}'".format(primary_value.replace("'", "''"))
+        sql = sql.format(
+            table_name = proxy_instance.model.table_name(),
+            primary_name = primary_name,
+            primary_value = primary_value
+        )
+        print sql
+        self.connection.execute(sql)
+
 
 
 
