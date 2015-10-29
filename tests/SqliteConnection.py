@@ -7,6 +7,7 @@ from tests import _sqlite_db_path
 from py_linq.queryable.providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
+from py_linq.queryable.entity.proxy import DynamicModelProxy
 from .TestModels import TestModel, TestModel2, TestPrimary, TestIntUnique, TestForeignKey
 
 
@@ -65,6 +66,23 @@ class TestSqlite(TestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(result[0].lower(), index_name.lower())
+
+    def test_insert(self):
+        self.conn.create_table(TestPrimary)
+        self.conn.save_changes()
+
+        test_primary = TestPrimary()
+        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
+        test_primary.test_pk = self.conn.add(test_primary_proxy)
+        self.conn.save_changes()
+
+        sql = u"SELECT int_pk FROM test_table tt WHERE tt.int_pk = 1"
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], test_primary.test_pk)
 
 
     def tearDown(self):

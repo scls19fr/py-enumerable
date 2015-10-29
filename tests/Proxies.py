@@ -9,6 +9,12 @@ from .TestModels import *
 class TestProxy(TestCase):
     def setUp(self):
         self.test_model = TestModel()
+        self.test_primary = TestPrimary()
+        self.test_primary_string = TestPrimaryString()
+
+    def test_primary_key(self):
+        self.assertEqual(self.test_primary.test_pk, 0)
+        self.assertEqual(self.test_primary_string.test_pk, '')
 
     def test_set_columns(self):
         self.test_model.test_int_column = 5

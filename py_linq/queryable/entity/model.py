@@ -2,14 +2,31 @@ __author__ = 'Bruce.Fenske'
 
 import inspect
 from .column_types import Column
-from .proxy import DynamicModelProxy
+from decimal import Decimal
+from ...exceptions import NoMatchingElement
 
 class Model(object):
 
     def __init__(self):
-        for name, value  in inspect.getmembers(self):
+        for name, value in inspect.getmembers(self):
             if isinstance(value, Column):
-                self.__dict__.setdefault(name, None)
+                if not value.is_nullable:
+                    v = None
+                    if value.column_type == int:
+                        v = 0
+                    elif value.column_type == float:
+                        v = float(0)
+                    elif value.column_type == Decimal:
+                        v = Decimal(0)
+                    elif value.column_type == unicode:
+                        v = ''
+                    elif value.column_type == bytes:
+                        v = b''
+                    else:
+                        raise NoMatchingElement(u"No matching type for {0}:{1}".format(value.column_name, value.column_type))
+                    self.__dict__.setdefault(name, v)
+                else:
+                    self.__dict__.setdefault(name, None)
             else:
                 self.__dict__.setdefault(name, value)
 

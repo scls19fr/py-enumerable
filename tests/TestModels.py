@@ -17,6 +17,10 @@ class TestPrimary(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(int, 'int_pk')
 
+class TestPrimaryString(Model):
+    __table_name__ = u"test_table"
+    test_pk = PrimaryKey(unicode, 'unicode_pk')
+
 
 class TestIntUnique(Model):
     __table_name__ = u"test_table"

@@ -4,7 +4,7 @@ import abc
 import sqlite3
 from decimal import Decimal
 from .parsers import SqliteUriParser
-from .entity.model import Model
+from .entity.proxy import DynamicModelProxy
 from ..exceptions import InvalidArgumentError
 
 
@@ -95,8 +95,8 @@ class DbConnectionBase(object):
     @abc.abstractmethod
     def query(self, model):
         """
-        Generates SQL statement to query a table given a data model
-        :param model: A child of py_linq.queryable.entity.model.Model
+        Generates SQL statement to query a table given an expression model
+        :param model: an expression model
         :return: sql statement as text
         """
         return NotImplementedError()
@@ -111,11 +111,11 @@ class DbConnectionBase(object):
         return NotImplementedError()
 
     @abc.abstractmethod
-    def add(self, model):
+    def add(self, proxy_instance):
         """
         Executes command to add a record to a given table given a data model
         :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
-        :return: void
+        :return: primary key
         """
         return NotImplementedError()
 
@@ -208,8 +208,41 @@ class SqliteDbConnection(DbConnectionBase):
     def update(self, model):
         raise NotImplementedError()
 
-    def add(self, model):
-        raise NotImplementedError()
+    def add(self, proxy_instance):
+        if not isinstance(proxy_instance, DynamicModelProxy):
+            raise InvalidArgumentError(u"Trying to add model that is not a DynamicModelProxy")
+
+        columns = []
+        column_values = []
+        for k,v in filter(lambda c: not c[1].column.is_primary_key and c[1].column.column_type != int, proxy_instance.columns.iteritems()):
+            columns.append(k)
+            if v.column.column_type == unicode:
+                if not v.column.is_nullable:
+                    if v.value is None or len(v.value) == 0:
+                        column_values.append('')
+                    else:
+                        column_values.append(u"'{0}'".format(v.value))
+                else:
+                    column_values.append("NULL")
+            else:
+                column_values.append(unicode(v.value) if v.value is not None else "NULL")
+
+        if len(columns) > 0:
+            sql = u"INSERT INTO {table_name}({columns}) VALUES({column_values});".format(
+                table_name=proxy_instance.model.table_name(),
+                columns=', '.join(columns),
+                column_values=', '.join(column_values)
+            )
+        else:
+            sql = u"INSERT INTO {table_name} VALUES(NULL);".format(
+                table_name=proxy_instance.model.table_name()
+            )
+
+        print sql
+        cursor = self.connection.cursor()
+        cursor.execute(sql)
+        print cursor.lastrowid
+        return cursor.lastrowid
 
     def delete(self, model):
         raise NotImplementedError()
