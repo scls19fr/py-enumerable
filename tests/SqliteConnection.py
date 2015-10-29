@@ -2,13 +2,14 @@ __author__ = 'Bruce.Fenske'
 
 import sqlite3
 import os
+import uuid
 from unittest import TestCase
 from tests import _sqlite_db_path
 from py_linq.queryable.providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
 from py_linq.queryable.entity.proxy import DynamicModelProxy
-from .TestModels import TestModel, TestModel2, TestPrimary, TestIntUnique, TestForeignKey
+from .TestModels import *
 
 
 class TestSqlite(TestCase):
@@ -67,7 +68,7 @@ class TestSqlite(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0].lower(), index_name.lower())
 
-    def test_insert(self):
+    def test_insert_primary(self):
         self.conn.create_table(TestPrimary)
         self.conn.save_changes()
 
@@ -84,6 +85,29 @@ class TestSqlite(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0], test_primary.test_pk)
 
+    def test_insert_string_primary(self):
+        """
+        Note how have to insert primary key manually if the primary key is not int type
+        """
+        self.conn.create_table(TestPrimaryString)
+        self.conn.save_changes()
+
+        pk = unicode(uuid.uuid4())
+
+        primary = TestPrimaryString()
+        primary.test_pk = pk
+        primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(primary)
+        self.conn.add(primary_proxy)
+        self.conn.save_changes()
+
+        sql = u"SELECT unicode_pk FROM test_table tt WHERE tt.unicode_pk = '{0}';".format(pk)
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], primary.test_pk)
+        self.assertEqual(result[0], pk)
 
     def tearDown(self):
         if self.conn is not None:

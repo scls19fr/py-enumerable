@@ -23,7 +23,7 @@ class ColumnProxy(object):
     @value.setter
     def value(self, value):
         if type(value) != self.column.column_type:
-                raise InvalidArgumentError(u"{0} does not equal {1}".format(value, self.column.column_type))
+            raise InvalidArgumentError(u"{0} does not equal {1}:{2}".format(value, self.column.column_type, self.column.column_name))
         self._value = value
 
 
@@ -38,6 +38,7 @@ class DynamicModelProxy(object):
         :return:
         """
         self._model = model
+        self._column_proxies = {}
         self._add_model_columns()
 
     def __setattr__(self, key, value):

@@ -17,6 +17,7 @@ class TestPrimary(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(int, 'int_pk')
 
+
 class TestPrimaryString(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(unicode, 'unicode_pk')
@@ -24,10 +25,10 @@ class TestPrimaryString(Model):
 
 class TestIntUnique(Model):
     __table_name__ = u"test_table"
+    test_pk = PrimaryKey(int)
     test_unique = Column(int, 'int_column', is_unique=True)
 
 class TestForeignKey(Model):
     __table_name__ = u"foreign_key_table"
-
     test_pk = PrimaryKey(int, 'int_pk')
     test_fk = ForeignKey(TestPrimary, 'test_fk', is_nullable=False)

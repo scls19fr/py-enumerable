@@ -168,9 +168,15 @@ class SqliteDbConnection(DbConnectionBase):
             columns = model.inspect_columns()
         except:
             raise InvalidArgumentError(u"Does not appear to be a proper data model that inherits from Model")
-        sql = u"CREATE TABLE {0} ([COLUMNS]);".format(model.table_name())
+        primary_keys = filter(lambda c: c[1].is_primary_key, columns)
+        if len(primary_keys) != 1:
+            raise InvalidArgumentError(u"{0} appears to have incorrect number of primary key declared: {1}".format(model.table_name(), len(primary_keys)))
+        sql = u"CREATE TABLE {table_name} ({columns})"
         columns_sql = u", ".join([self._generate_col_sql(col[0], col[1]) for col in columns])
-        sql = sql.replace(u"[COLUMNS]", columns_sql)
+        sql = sql.format(
+            table_name=model.table_name(),
+            columns=columns_sql
+        )
         self.connection.execute(sql)
 
     def _generate_col_sql(self, column_name, column):
@@ -214,16 +220,14 @@ class SqliteDbConnection(DbConnectionBase):
 
         columns = []
         column_values = []
-        for k,v in filter(lambda c: not c[1].column.is_primary_key and c[1].column.column_type != int, proxy_instance.columns.iteritems()):
-            columns.append(k)
+        for k,v in filter(lambda c: not c[1].column.is_primary_key or (c[1].column.is_primary_key and c[1].column.column_type != int), proxy_instance.columns.iteritems()):
+            column_name = v.column.column_name if v.column.column_name is not None or len(v.column.column_name) !=0 else k
+            columns.append(column_name)
             if v.column.column_type == unicode:
-                if not v.column.is_nullable:
-                    if v.value is None or len(v.value) == 0:
-                        column_values.append('')
-                    else:
-                        column_values.append(u"'{0}'".format(v.value))
+                if v.value is None or len(v.value) == 0:
+                    column_values.append(u"NULL")
                 else:
-                    column_values.append("NULL")
+                    column_values.append(u"'{0}'".format(v.value.replace("'", "''")))
             else:
                 column_values.append(unicode(v.value) if v.value is not None else "NULL")
 
@@ -238,10 +242,8 @@ class SqliteDbConnection(DbConnectionBase):
                 table_name=proxy_instance.model.table_name()
             )
 
-        print sql
         cursor = self.connection.cursor()
         cursor.execute(sql)
-        print cursor.lastrowid
         return cursor.lastrowid
 
     def delete(self, model):
