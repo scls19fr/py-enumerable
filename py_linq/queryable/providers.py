@@ -3,6 +3,7 @@ __author__ = 'ViraLogic Software'
 import abc
 import sqlite3
 from decimal import Decimal
+from ..utils import is_null_or_empty
 from .parsers import SqliteUriParser
 from .entity.proxy import DynamicModelProxy
 from ..exceptions import InvalidArgumentError, NullArgumentError
@@ -226,7 +227,7 @@ class SqliteDbConnection(DbConnectionBase):
         for k,v in filter(lambda c: not c[1].column.is_primary_key or (c[1].column.is_primary_key and c[1].column.column_type != int), proxy_instance.columns.iteritems()):
             columns.append(proxy_instance.column_name(k))
             if v.column.column_type == unicode:
-                if v.value is None or len(v.value) == 0:
+                if is_null_or_empty(v.value):
                     column_values.append(u"NULL")
                 else:
                     column_values.append(u"'{0}'".format(v.value.replace("'", "''")))
@@ -255,16 +256,14 @@ class SqliteDbConnection(DbConnectionBase):
         if len(primary_key) != 1:
             raise InvalidArgumentError(u"There can only be 1 primary key associated with {0}".format(proxy_instance.model.table_name()))
         sql = u"DELETE FROM {table_name} WHERE {primary_name} = {primary_value};"
-        primary_name = proxy_instance.column_name(primary_key[0][0])
-        primary_value = primary_key[0][1].value
-        if primary_key[0][1].column.column_type == unicode:
-            if primary_value is None or len(primary_value) == 0:
-                raise NullArgumentError(u"Primary key column {0} must have value".format(primary_name))
-            primary_value = u"'{0}'".format(primary_value.replace("'", "''"))
+        primary_name, primary_proxy = primary_key[0]
+        primary_name = proxy_instance.column_name(primary_name)
+        if primary_proxy.column.column_type == unicode and is_null_or_empty(primary_proxy.value):
+            raise NullArgumentError(u"Primary key column {0} must have value".format(primary_name))
         sql = sql.format(
-            table_name = proxy_instance.model.table_name(),
-            primary_name = primary_name,
-            primary_value = primary_value
+            table_name=proxy_instance.model.table_name(),
+            primary_name=primary_name,
+            primary_value=primary_proxy.value_for_sql()
         )
         print sql
         self.connection.execute(sql)

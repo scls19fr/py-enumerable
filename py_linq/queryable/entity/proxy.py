@@ -26,6 +26,11 @@ class ColumnProxy(object):
             raise InvalidArgumentError(u"{0} does not equal {1}:{2}".format(value, self.column.column_type, self.column.column_name))
         self._value = value
 
+    def value_for_sql(self):
+        if self.column.column_type == unicode:
+            return u"'{0}'".format(self.value)
+        return self.value
+
 
 class DynamicModelProxy(object):
     _column_proxies = {}
