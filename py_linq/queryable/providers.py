@@ -257,7 +257,6 @@ class SqliteDbConnection(DbConnectionBase):
         cursor.execute(sql)
         id = cursor.lastrowid
         proxy_instance.__setattr__(model.get_primary_key_column()[0], id)
-        return id
 
     def remove(self, model):
         proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
