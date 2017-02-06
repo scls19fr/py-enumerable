@@ -82,8 +82,7 @@ class TestSqlite(TestCase):
 
         primary = TestPrimaryString()
         primary.test_pk = pk
-        primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(primary)
-        self.conn.add(primary_proxy)
+        self.conn.add(primary)
         self.conn.save_changes()
 
         sql = u"SELECT unicode_pk FROM test_table tt WHERE tt.unicode_pk = '{0}';".format(pk)
@@ -100,8 +99,7 @@ class TestSqlite(TestCase):
         self.conn.save_changes()
 
         test_primary = TestPrimary()
-        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
-        test_primary.test_pk = self.conn.add(test_primary_proxy)
+        test_primary.test_pk = self.conn.add(test_primary)
         self.conn.save_changes()
 
         sql = u"SELECT int_pk FROM test_table tt WHERE tt.int_pk = 1"
@@ -115,8 +113,7 @@ class TestSqlite(TestCase):
 
     def test_delete(self):
         test_primary = self._insert_test_primary()
-        test_primary_proxy = DynamicModelProxy.create_proxy_from_model_instance(test_primary)
-        self.conn.remove(test_primary_proxy)
+        self.conn.remove(test_primary)
         self.conn.save_changes()
 
         sql = u"SELECT COUNT(*) FROM test_table tt;"

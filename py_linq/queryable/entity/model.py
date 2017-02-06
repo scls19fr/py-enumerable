@@ -37,20 +37,34 @@ class Model(object):
         return getattr(cls, '__table_name__')
 
     @classmethod
-    def inspect_columns(cls):
-        """
-        :return: list of (column_name, column instances) for the model
-        """
-        columns = [
+    def get_column_members(cls):
+        return [
             (unicode(name), col) for name, col in inspect.getmembers(cls)
             if isinstance(col, Column)
         ]
 
+    @classmethod
+    def inspect_columns(cls):
+        """
+        :return: list of (column_name, column instances) for the model
+        """
+        columns = cls.get_column_members()
+
         #Need to reorder the columns so that primary key is first for table creation. So just have this method
         #return the columns in the correct order everytime.
-        pk_col = filter(lambda c: c[1].is_primary_key, columns)
+        pk_col = cls.get_primary_key_column()
         fk_col = filter(lambda c: c[1].foreign_key is not None, columns)
         rest = filter(lambda c: not c[1].is_primary_key and c[1].foreign_key is None, columns)
         columns = pk_col + fk_col + rest
         return [(name if col.column_name is None else col.column_name, col) for name, col in columns]
+
+    @classmethod
+    def get_primary_key_column(cls):
+        columns = filter(lambda c: c[1].is_primary_key, cls.get_column_members())
+        result = len(columns)
+        if result == 0:
+            return None
+        if result > 1:
+            raise AttributeError(unicode.format("More than one primary key column defined for {0}", cls.__name__))
+        return columns[0]
 

@@ -1,4 +1,4 @@
-__author__ = 'ViraLogic Software'
+__author__ = 'Bruce Fenske'
 
 import abc
 import sqlite3
@@ -24,6 +24,27 @@ class DbConnectionBase(object):
         :return: void
         """
         self.connection_uri = connection_uri
+
+    def _generate_columns_and_values(self, model):
+        """
+        Generates a tuple of column names and respective values for insert statement
+        :param model: a py_linq.queryable.entity.model.Model child class
+        :return: a tuple of column names and respective values for insert statement
+        """
+        proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
+        columns = []
+        column_values = []
+        for k, v in filter(lambda c: not c[1].column.is_primary_key or (
+            c[1].column.is_primary_key and c[1].column.column_type != int), proxy_instance.columns.iteritems()):
+            columns.append(proxy_instance.column_name(k))
+            if v.column.column_type == unicode:
+                if v.value is None or len(v.value) == 0:
+                    column_values.append(u"NULL")
+                else:
+                    column_values.append(u"'{0}'".format(v.value.replace("'", "''")))
+            else:
+                column_values.append(unicode(v.value) if v.value is not None else "NULL")
+        return columns, column_values
 
     @property
     def provider_config(self):
@@ -105,30 +126,28 @@ class DbConnectionBase(object):
     def update(self, model):
         """
         Executes command to update a table given a data model
-        :param model: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :param model: A child of py_linq.queryable.entity.model.Model
         :return: sql statement as text
         """
         return NotImplementedError()
 
     @abc.abstractmethod
-    def add(self, proxy_instance):
+    def add(self, model):
         """
         Executes command to add a record to a given table given a data model
-        :param proxy_instance: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :param model: A child of py_linq.queryable.entity.model.Model
         :return: primary key
         """
         return NotImplementedError()
 
     @abc.abstractmethod
-    def remove(self, proxy_instance):
+    def remove(self, model):
         """
         Executes command to delete a record from a given table
-        :param proxy_instance: A proxy class of a py_linq.queryable.entity.model.Model child where the columns hold values
+        :param model: A child of py_linq.queryable.entity.model.Model
         :return: void
         """
-
-    def is_valid_proxy_instance(self, instance):
-        return isinstance(instance, DynamicModelProxy)
+        return NotImplementedError()
 
 
 
@@ -215,24 +234,14 @@ class SqliteDbConnection(DbConnectionBase):
         raise NotImplementedError()
 
     def update(self, model):
-        raise NotImplementedError()
+        columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)
+        proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
+        if len(columns) > 0:
+            sql = u"UPDATE {table_name} {sets} WHERE {primary_name} = {primary_value};"
 
-    def add(self, proxy_instance):
-        if not self.is_valid_proxy_instance(proxy_instance):
-            raise InvalidArgumentError(u"Trying to add model that is not a DynamicModelProxy")
-
-        columns = []
-        column_values = []
-        for k,v in filter(lambda c: not c[1].column.is_primary_key or (c[1].column.is_primary_key and c[1].column.column_type != int), proxy_instance.columns.iteritems()):
-            columns.append(proxy_instance.column_name(k))
-            if v.column.column_type == unicode:
-                if v.value is None or len(v.value) == 0:
-                    column_values.append(u"NULL")
-                else:
-                    column_values.append(u"'{0}'".format(v.value.replace("'", "''")))
-            else:
-                column_values.append(unicode(v.value) if v.value is not None else "NULL")
-
+    def add(self, model):
+        columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)
+        proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
         if len(columns) > 0:
             sql = u"INSERT INTO {table_name}({columns}) VALUES({column_values});".format(
                 table_name=proxy_instance.model.table_name(),
@@ -246,11 +255,12 @@ class SqliteDbConnection(DbConnectionBase):
 
         cursor = self.connection.cursor()
         cursor.execute(sql)
-        return cursor.lastrowid
+        id = cursor.lastrowid
+        proxy_instance.__setattr__(model.get_primary_key_column()[0], id)
+        return id
 
-    def remove(self, proxy_instance):
-        if not self.is_valid_proxy_instance(proxy_instance):
-            raise InvalidArgumentError(u"Trying to delete a model that is not a DynamicModelProxy")
+    def remove(self, model):
+        proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
         primary_key = filter(lambda (k,v): v.column.is_primary_key, proxy_instance.columns.iteritems())
         if len(primary_key) != 1:
             raise InvalidArgumentError(u"There can only be 1 primary key associated with {0}".format(proxy_instance.model.table_name()))
@@ -266,7 +276,6 @@ class SqliteDbConnection(DbConnectionBase):
             primary_name = primary_name,
             primary_value = primary_value
         )
-        print sql
         self.connection.execute(sql)
 
 
