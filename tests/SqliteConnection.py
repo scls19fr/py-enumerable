@@ -124,6 +124,33 @@ class TestSqlite(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0], 0)
 
+    def test_update(self):
+        self.conn.create_table(TestUpdateModel)
+        self.conn.save_changes()
+
+        update_test = TestUpdateModel()
+        update_test.update_col = 5
+        update_test.key = self.conn.add(update_test)
+        self.conn.save_changes()
+
+        sql = u"SELECT update_column from test_update_table ut WHERE ut.key_column = {0}".format(update_test.key)
+        cursor = self.conn.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], update_test.update_col)
+
+        update_test.update_col = 10
+        self.conn.update(update_test)
+        self.conn.save_changes()
+
+        cursor.execute(sql)
+        result = cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], update_test.update_col)
+
     def tearDown(self):
         if self.conn is not None:
             self.conn.connection.close()

@@ -235,9 +235,22 @@ class SqliteDbConnection(DbConnectionBase):
 
     def update(self, model):
         columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)
+        sets = []
+        i = 0
+        for col in columns:
+            set_sql = u"SET {column_name} = {column_value}".format(column_name=col, column_value=column_values[i])
+            sets.append(set_sql)
+            i += 0
+        set_str = ", ".join(sets)
         proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
         if len(columns) > 0:
-            sql = u"UPDATE {table_name} {sets} WHERE {primary_name} = {primary_value};"
+            sql = u"UPDATE {table_name} {sets} WHERE {primary_name} = {primary_value};".format(
+                table_name=proxy_instance.model.table_name(),
+                sets=set_str,
+                primary_name=proxy_instance.primary_key_name,
+                primary_value=proxy_instance.primary_key_value
+            )
+            self.connection.execute(sql)
 
     def add(self, model):
         columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)
@@ -255,25 +268,20 @@ class SqliteDbConnection(DbConnectionBase):
 
         cursor = self.connection.cursor()
         cursor.execute(sql)
-        id = cursor.lastrowid
-        proxy_instance.__setattr__(model.get_primary_key_column()[0], id)
+        return cursor.lastrowid
 
     def remove(self, model):
         proxy_instance = DynamicModelProxy.create_proxy_from_model_instance(model)
-        primary_key = filter(lambda (k,v): v.column.is_primary_key, proxy_instance.columns.iteritems())
-        if len(primary_key) != 1:
-            raise InvalidArgumentError(u"There can only be 1 primary key associated with {0}".format(proxy_instance.model.table_name()))
         sql = u"DELETE FROM {table_name} WHERE {primary_name} = {primary_value};"
-        primary_name = proxy_instance.column_name(primary_key[0][0])
-        primary_value = primary_key[0][1].value
-        if primary_key[0][1].column.column_type == unicode:
+        primary_value = proxy_instance.primary_key_value
+        if proxy_instance.primary_key[0][1].column.column_type == unicode:
             if primary_value is None or len(primary_value) == 0:
-                raise NullArgumentError(u"Primary key column {0} must have value".format(primary_name))
+                raise NullArgumentError(u"Primary key column {0} must have value".format(proxy_instance.primary_key_name))
             primary_value = u"'{0}'".format(primary_value.replace("'", "''"))
         sql = sql.format(
-            table_name = proxy_instance.model.table_name(),
-            primary_name = primary_name,
-            primary_value = primary_value
+            table_name=proxy_instance.model.table_name(),
+            primary_name=proxy_instance.primary_key_name,
+            primary_value=primary_value
         )
         self.connection.execute(sql)
 

@@ -89,6 +89,24 @@ class DynamicModelProxy(object):
             raise InvalidArgumentError(u"No such column with key of {0}".format(key))
         return column_proxy.column.column_name if column_proxy.column.column_name is not None or len(column_proxy.column.column_name) != 0 else key
 
+    @property
+    def primary_key(self):
+        primary_key = filter(lambda x: x[1].column.is_primary_key, self.columns.iteritems())
+        if len(primary_key) == 0:
+            return None
+        if len(primary_key) > 1:
+            raise InvalidArgumentError(u"There can only be 1 primary key associated with {0}".format(self.model.table_name()))
+        return primary_key
+
+    @property
+    def primary_key_name(self):
+        return None if self.primary_key is None else self.column_name(self.primary_key[0][0])
+
+    @property
+    def primary_key_value(self):
+        return None if self.primary_key is None else self.primary_key[0][1].value
+
+
 
 
 
