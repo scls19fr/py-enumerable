@@ -2,9 +2,12 @@ import abc
 
 
 class ExpressionType(object):
-    Constant = 0,
-    Parameter = 1
-    Lambda = 2
+    Constant = 0
+    Lambda = 1
+    Add = 100
+    Subtract = 101
+    Multiply = 102
+    Divide = 103
 
 
 class ExpressionVisitor(object):

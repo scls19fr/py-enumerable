@@ -7,7 +7,8 @@ testclasses = [
     'tests.Functions',
     'tests.SqliteConnection',
     'tests.Proxies',
-    'tests.Expressions'
+    'tests.UnaryExpressions',
+    'tests.BinaryExpressions'
 ]
 suite = unittest.TestLoader().loadTestsFromNames(testclasses)
 unittest.TextTestRunner(verbosity=2).run(suite)
