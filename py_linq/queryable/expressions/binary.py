@@ -1,9 +1,9 @@
 import abc
-from ..expressions import Expression, ExpressionType
+from ..expressions import *
 from ..expressions.unary import ConstantExpression
 
 
-class BinaryExpression(Expression):
+class BinaryExpression(NaryExpression):
     __metaclass__ = abc.ABCMeta
 
     """
@@ -15,34 +15,19 @@ class BinaryExpression(Expression):
         :param unary1: UnaryExpression Instance
         :param unary2: UnaryExpression Instance
         """
-        if not left.node_type == right.node_type:
-            raise TypeError("type mismatch between unary expressions when instantiating binary expression")
-        self._left = left
-        self._right = right
-        self._children = [self._left, self._right]
-
-    @property
-    def can_reduce(self):
-        return True
+        super(BinaryExpression, self).__init__(left, right)
 
     @abc.abstractproperty
     def node_type(self):
         raise NotImplementedError()
 
-    @abc.abstractmethod
-    def reduce(self):
-        raise NotImplementedError()
-
-    def visit_children(self, expression_visitor):
-        raise NotImplementedError()
-
     @property
     def left(self):
-        return self._left
+        return self.children[0]
 
     @property
     def right(self):
-        return self._right
+        return self.children[1]
 
 
 class AddExpression(BinaryExpression):
@@ -54,6 +39,7 @@ class AddExpression(BinaryExpression):
         return ExpressionType.Add
 
     def reduce(self):
+        super(AddExpression, self).reduce()
         return self.left + self.right
 
 
@@ -66,6 +52,7 @@ class SubstractExpression(BinaryExpression):
         return ExpressionType.Subtract
 
     def reduce(self):
+        super(SubstractExpression, self).reduce()
         return self.left - self.right
 
 
@@ -78,6 +65,7 @@ class MultiplyExpression(BinaryExpression):
         return ExpressionType.Multiply
 
     def reduce(self):
+        super(MultiplyExpression, self).reduce()
         return self.left * self.right
 
 
@@ -90,4 +78,5 @@ class DivideExpression(BinaryExpression):
         return ExpressionType.Divide
 
     def reduce(self):
+        super(DivideExpression, self).reduce()
         return self.left / self.right

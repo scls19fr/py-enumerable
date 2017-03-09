@@ -39,7 +39,7 @@ class ExpressionVisitor(object):
         raise NotImplementedError()
 
 
-class Expression(object):
+class IExpression(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
@@ -50,14 +50,6 @@ class Expression(object):
     def node_type(self):
         raise NotImplementedError()
 
-    def accepts(self, expression_visitor):
-        """
-        Returns result of expression visitor visiting expression
-        :param expression_visitor: An instance of expression visitor
-        :return: expression instance
-        """
-        return expression_visitor.visit(self)
-
     @abc.abstractmethod
     def reduce(self):
         raise NotImplementedError()
@@ -66,19 +58,50 @@ class Expression(object):
     def visit_children(self, expression_visitor):
         raise NotImplementedError()
 
-    def __repr__(self):
+
+class NaryExpression(IExpression):
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, *args):
         """
-        Converts instance into string representation
-        :return: string
+        Constructor for NaryExpression
+        :param args: list of expressions
         """
-        klass = self.__class__.__name__
-        private = "_{0}__".format(klass)
-        args = []
-        for name in self.__dict__:
-            if name.startswith(private):
-                value = self.__dict__[name]
-                name = name[len(private):]
-                args.append("{0}={1}".format(name, repr(value)))
-        return "{0}({1})".format(klass, ", ".join(args))
+        self._children =[]
+        for a in args:
+            if not isinstance(a, IExpression):
+                raise TypeError("all arguments should implement IExpression")
+            self._children.append(a)
+
+    @property
+    def children(self):
+        return self._children
+
+    @abc.abstractproperty
+    def node_type(self):
+        raise NotImplementedError()
+
+    @property
+    def can_reduce(self):
+        return len(self.children) > 0
+
+    def reduce(self):
+        if self.can_reduce:
+            for i, c in enumerate(self.children):
+                while c.can_reduce:
+                    c = c.reduce()
+                self.children[i] = c
+        return self
+
+    def visit_children(self, expression_visitor):
+        for c in self.children:
+            c = expression_visitor.visit(c)
+        return self
+
+
+
+
+
+
 
 

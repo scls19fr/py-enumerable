@@ -2,26 +2,15 @@ import abc
 from ..expressions import *
 
 
-class UnaryExpression(Expression):
+class UnaryExpression(NaryExpression):
     __metaclass__ = abc.ABCMeta
 
     """
     Abstract implementation of Expression for unary operators
     """
-
-    @property
-    def can_reduce(self):
-        return False
-
     @abc.abstractproperty
     def node_type(self):
         raise NotImplementedError()
-
-    def reduce(self):
-        return self
-
-    def visit_children(self, expression_visitor):
-        return self
 
     def __eq__(self, other):
         return self.node_type == other.node_type
@@ -32,6 +21,7 @@ class ConstantExpression(UnaryExpression):
     Constant expression implementation
     """
     def __init__(self, value):
+        self._children = []
         self.__value = value
 
     @property
