@@ -4,7 +4,6 @@ import inspect
 from .column_types import Column
 from decimal import Decimal
 from ...exceptions import NoMatchingElement
-
 class Model(object):
 
     def __init__(self):

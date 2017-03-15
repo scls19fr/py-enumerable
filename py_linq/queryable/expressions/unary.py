@@ -98,3 +98,7 @@ class LambdaExpression(UnaryExpression):
 
     def __div__(self, other):
         raise NotImplementedError("Nonsensical to divide 2 lambda expressions")
+
+
+
+

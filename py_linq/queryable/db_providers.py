@@ -6,6 +6,8 @@ from decimal import Decimal
 from .parsers import SqliteUriParser
 from .entity.proxy import DynamicModelProxy
 from ..exceptions import InvalidArgumentError, NullArgumentError
+from .providers.SqliteQueryProvider import SqliteQueryProvider
+from .expressions.expression_tree import ModelExpression
 
 
 class DbConnectionBase(object):
@@ -231,7 +233,8 @@ class SqliteDbConnection(DbConnectionBase):
             self.connection.execute(sql)
 
     def query(self, model):
-        raise NotImplementedError()
+        query_provider = SqliteQueryProvider(self)
+        return query_provider.createQuery(ModelExpression(model))
 
     def update(self, model):
         columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)

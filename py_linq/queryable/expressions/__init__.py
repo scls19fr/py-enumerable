@@ -3,40 +3,9 @@ import abc
 
 class ExpressionType(object):
     Constant = 0
-    Lambda = 1
-    Add = 100
-    Subtract = 101
-    Multiply = 102
-    Divide = 103
-
-
-class ExpressionVisitor(object):
-
-    def __init__(self):
-        pass
-
-    def visit(self, expression):
-        """
-        Visits the given expression node and returns new expression
-        :param expression: an expression instance
-        :return: another expression instance
-        """
-        if expression is None:
-            return None
-
-        expType = expression.node_type
-        if expType == ExpressionType.Constant:
-            return self.__visit_constant(expression)
-        elif expType == ExpressionType.Lambda:
-            return self.__visit_lambda(expression)
-        else:
-            raise TypeError("{0} is not a valid expression node type".format(expType))
-
-    def __visit_constant(self, expression):
-        return expression
-
-    def __visit_lambda(self, expression):
-        raise NotImplementedError()
+    ExpressionTree = 1
+    ModelExpression = 2
+    SelectExpression = 3
 
 
 class IExpression(object):
@@ -94,8 +63,9 @@ class NaryExpression(IExpression):
         return self
 
     def visit_children(self, expression_visitor):
-        for c in self.children:
+        for i, c in enumerate(self.children):
             c = expression_visitor.visit(c)
+            self.children[i] = c
         return self
 
 

@@ -5,10 +5,9 @@ import os
 import uuid
 from unittest import TestCase
 from tests import _sqlite_db_path
-from py_linq.queryable.providers import SqliteDbConnection
+from py_linq.queryable.db_providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
-from py_linq.queryable.entity.proxy import DynamicModelProxy
 from .TestModels import *
 
 
