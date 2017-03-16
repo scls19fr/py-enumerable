@@ -1,17 +1,10 @@
-import abc
 from ..expressions import *
 
 
 class UnaryExpression(NaryExpression):
-    __metaclass__ = abc.ABCMeta
-
     """
     Abstract implementation of Expression for unary operators
     """
-    @abc.abstractproperty
-    def node_type(self):
-        raise NotImplementedError()
-
     def __eq__(self, other):
         return self.node_type == other.node_type
 
@@ -23,10 +16,6 @@ class ConstantExpression(UnaryExpression):
     def __init__(self, value):
         self._children = []
         self.__value = value
-
-    @property
-    def node_type(self):
-        return ExpressionType.Constant
 
     @property
     def value(self):
@@ -63,10 +52,6 @@ class LambdaExpression(UnaryExpression):
 
     def __init__(self, func):
         self.__func = func
-
-    @property
-    def node_type(self):
-        return ExpressionType.Lambda
 
     @property
     def body(self):

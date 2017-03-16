@@ -1,8 +1,8 @@
 __author__ = 'ViraLogic Software'
 
 import inspect
-import providers
-from providers import *
+import db_providers
+from db_providers import *
 from py_linq.exceptions import *
 
 
@@ -33,7 +33,7 @@ class ConnectionManager(object):
         """
         connections = [
             cls
-            for name, cls in inspect.getmembers(providers)
+            for name, cls in inspect.getmembers(db_providers)
             if inspect.isclass(cls)
             and hasattr(cls, '__provider_name__')
             and issubclass(cls, DbConnectionBase)

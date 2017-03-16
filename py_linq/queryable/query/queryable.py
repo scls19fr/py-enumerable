@@ -20,10 +20,12 @@ class Queryable(IQueryable):
             self._expression = ExpressionTree()
 
     def __iter__(self):
-        rows = self.provider.execute(self.expression)
-        for r in rows:
+        cursor = self.provider.execute(self.expression)
+        row = cursor.fetchone()
+        while row is not None:
             #TODO: convert to proxy object required
-            yield r
+            yield row
+            row = cursor.fetchone()
 
     @classmethod
     def from_table(cls, provider, table_class):

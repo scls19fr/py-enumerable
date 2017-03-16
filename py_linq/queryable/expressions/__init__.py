@@ -1,22 +1,11 @@
 import abc
 
 
-class ExpressionType(object):
-    Constant = 0
-    ExpressionTree = 1
-    ModelExpression = 2
-    SelectExpression = 3
-
-
 class IExpression(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def can_reduce(self):
-        raise NotImplementedError()
-
-    @abc.abstractproperty
-    def node_type(self):
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -45,10 +34,6 @@ class NaryExpression(IExpression):
     @property
     def children(self):
         return self._children
-
-    @abc.abstractproperty
-    def node_type(self):
-        raise NotImplementedError()
 
     @property
     def can_reduce(self):

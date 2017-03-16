@@ -14,7 +14,7 @@ class SqlVisitorResultModel(object):
 
     @property
     def has_projections(self):
-        return self.projection is not None and len(self.projection) > 0
+        return self.projection is not None and len(self.projection.value) > 0
 
     @property
     def has_source_name(self):

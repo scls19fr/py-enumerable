@@ -17,10 +17,6 @@ class BinaryExpression(NaryExpression):
         """
         super(BinaryExpression, self).__init__(left, right)
 
-    @abc.abstractproperty
-    def node_type(self):
-        raise NotImplementedError()
-
     @property
     def left(self):
         return self.children[0]

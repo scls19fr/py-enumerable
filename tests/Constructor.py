@@ -4,6 +4,7 @@ from unittest import TestCase
 from py_linq import Enumerable
 from tests import _empty, _simple, _complex
 
+
 class TestConstructor(TestCase):
     def setUp(self):
         self.empty = Enumerable(_empty)

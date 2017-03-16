@@ -6,26 +6,18 @@ class ExpressionTree(NaryExpression):
     def __init__(self):
         super(ExpressionTree, self).__init__()
 
-    @property
-    def node_type(self):
-        return ExpressionType.ExpressionTree
-
     def add_node(self, expression):
         if not isinstance(expression, IExpression):
             raise TypeError("Need to append IExpression instance as node in ExpressionTree")
         self.children.append(expression)
 
 
-class ModelExpression(ExpressionType):
+class ModelExpression(ExpressionTree):
     def __init__(self, klass):
         super(ModelExpression, self).__init__()
         if not issubclass(klass, Model):
             raise TypeError("klass arg must inherit from Model")
         self.__klass = klass
-
-    @property
-    def node_type(self):
-        return ExpressionType.ModelExpression
 
     @property
     def model(self):
