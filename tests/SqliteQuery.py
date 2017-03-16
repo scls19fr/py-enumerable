@@ -18,8 +18,13 @@ class TestSqliteQuery(TestCase):
         select_text = "SELECT key_column, update_column FROM test_update_table;"
         query = self.query.select(lambda x: (x.key, x.update_col))
         query.provider.execute(query.expression)
-        print "query: {0}\n".format(query.sql)
         self.assertEqual(query.sql, select_text, "select sql should be {0}: {1}".format(select_text, query.sql))
+
+        select_text = "SELECT * FROM test_update_table;"
+        self.query = self.conn.query(TestUpdateModel)
+        self.query.provider.execute(self.query.expression)
+        self.assertEqual(self.query.sql, select_text, "select sql should be {0}: {1}".format(select_text, self.query.sql))
+
 
     def tearDown(self):
         if self.conn is not None:

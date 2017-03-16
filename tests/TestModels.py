@@ -38,3 +38,9 @@ class TestUpdateModel(Model):
     key = PrimaryKey(int, 'key_column')
     update_col = Column(int, 'update_column')
 
+class Student(Model):
+    __table_name__ = u"student"
+    student_id = PrimaryKey(int, "student_id")
+    first_name = Column(unicode, "first_name")
+    last_name = Column(unicode, "last_name")
+

@@ -17,7 +17,17 @@ class SelectExpression(BinaryExpression):
         """
         return ConstantExpression(tuple([col.column_name for col in self.left.compile(self.right.model)]))
 
+class WhereExpression(BinaryExpression):
+    def __init__(self, lambda_expression, model_expression):
+        super(WhereExpression, self).__init__(lambda_expression, model_expression)
 
+    @property
+    def can_reduce(self):
+        return True
 
-
-
+    def reduce(self):
+        """
+        Reduce where expression into
+        :return:
+        """
+        raise NotImplementedError()
