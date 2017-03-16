@@ -19,6 +19,12 @@ class Queryable(IQueryable):
         else:
             self._expression = ExpressionTree()
 
+    def __iter__(self):
+        rows = self.provider.execute(self.expression)
+        for r in rows:
+            #TODO: convert to proxy object required
+            yield r
+
     @classmethod
     def from_table(cls, provider, table_class):
         if not issubclass(table_class, Model):
@@ -32,6 +38,10 @@ class Queryable(IQueryable):
     @property
     def provider(self):
         return self._provider
+
+    @property
+    def sql(self):
+        return self.provider.sql
 
     def select(self, func):
         """
