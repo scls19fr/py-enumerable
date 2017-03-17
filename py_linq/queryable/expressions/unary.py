@@ -61,6 +61,10 @@ class LambdaExpression(UnaryExpression):
         """
         return self.__func.func_code.co_code
 
+    @property
+    def func(self):
+        return self.__func
+
     def compile(self, arg):
         """
         Executes the code in lambda expression with given argument

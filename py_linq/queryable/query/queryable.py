@@ -51,6 +51,6 @@ class Queryable(IQueryable):
         :param func: lambda expression to select properties from model
         :return: IQueryable instance
         """
-        select = SelectExpression(LambdaExpression(func), self.expression)
+        select = SelectExpression(self.expression, LambdaExpression(func))
         self.expression.add_node(select)
         return self

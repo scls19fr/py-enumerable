@@ -25,6 +25,8 @@ class SqliteExpressionVisitor(IExpressionVisitor):
 
     def _visit_model(self, expression):
         self.sql_expression_result.source = expression.model.table_name()
+        if len(filter(lambda e: isinstance(e, SelectExpression), expression.children)) == 0:
+            expression.add_node(SelectExpression(expression))
 
     @property
     def sql_expression_result(self):

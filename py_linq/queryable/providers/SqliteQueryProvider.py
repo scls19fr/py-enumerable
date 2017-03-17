@@ -26,16 +26,16 @@ class SqliteQueryProvider(IQueryProvider):
         return Queryable(self, expression)
 
     def execute(self, expression):
-        expression.visit_children(self.visitor)
         self.visitor.visit(expression)
+        expression.visit_children(self.visitor)
         cursor = self.db_provider.connection.cursor()
         cursor.execute(self.sql)
         return cursor
 
     @property
     def __selects(self):
-        if not self.visitor.sql_expression_result.has_projections:
-            return u"SELECT * "
+        if self.visitor.sql_expression_result.projection is None:
+            raise Exception("Projection is None")
         selects = u", ".join(self.visitor.sql_expression_result.projection.value)
         return u"SELECT {0} ".format(selects)
 

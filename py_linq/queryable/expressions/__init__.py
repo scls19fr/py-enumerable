@@ -27,7 +27,7 @@ class NaryExpression(IExpression):
         """
         self._children =[]
         for a in args:
-            if not isinstance(a, IExpression):
+            if a is not None and not isinstance(a, IExpression):
                 raise TypeError("all arguments should implement IExpression")
             self._children.append(a)
 
