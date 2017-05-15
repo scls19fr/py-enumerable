@@ -295,20 +295,3 @@ class TestFunctions(TestCase):
             collection = e['collection'].to_list()
             self.assertEqual(len(collection), 0 if i == 0 else 1, "should have {0} element(s)".format(0 if i == 0 else 1))
             self.assertListEqual(collection, [] if i==0 else [i + 1], "Collection should equal {0}".format([] if i==0 else [i + 1]))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

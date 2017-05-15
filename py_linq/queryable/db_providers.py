@@ -7,8 +7,6 @@ from .parsers import SqliteUriParser
 from .entity.proxy import DynamicModelProxy
 from ..exceptions import InvalidArgumentError, NullArgumentError
 from .providers.SqliteQueryProvider import SqliteQueryProvider
-from .expressions.expression_tree import ModelExpression
-
 
 class DbConnectionBase(object):
     """
