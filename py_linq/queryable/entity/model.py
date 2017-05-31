@@ -54,7 +54,7 @@ class Model(object):
         pk_col = cls.get_primary_key_column()
         fk_col = filter(lambda c: c[1].foreign_key is not None, columns)
         rest = filter(lambda c: not c[1].is_primary_key and c[1].foreign_key is None, columns)
-        columns = [pk_col] + fk_col + rest if pk_col is not None else [] + fk_col +  rest
+        columns = [pk_col] + fk_col + rest if pk_col is not None else [] + fk_col + rest
         return [(name if col.column_name is None else col.column_name, col) for name, col in columns]
 
     @classmethod

@@ -1,17 +1,7 @@
-import abc
-
 
 class AST(object):
-    @abc.abstractproperty
-    def can_reduce(self):
-        return NotImplementedError()
-
-    def reduce(self):
-        return self._reduce() if self.can_reduce else self
-
-    @abc.abstractmethod
-    def _reduce(self):
-        return NotImplementedError()
+    def visit(self, visitor):
+        return visitor.visit(self)
 
 
 class UnaryExpression(AST):
@@ -20,7 +10,11 @@ class UnaryExpression(AST):
         Constructor
         :param arg: arg
         """
-        self.arg = arg
+        self.__arg = arg
+
+    @property
+    def value(self):
+        return self.__arg
 
 
 class BinaryExpression(AST):
@@ -34,3 +28,9 @@ class BinaryExpression(AST):
         self.left = left
         self.operator = op
         self.right = right
+
+
+class SelectExpression(AST):
+    def __init__(self, model, func=None):
+        self.func = func
+        self.model = model
