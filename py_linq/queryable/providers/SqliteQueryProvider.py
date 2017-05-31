@@ -1,25 +1,38 @@
 from ..providers import IQueryProvider
+from ..visitors.sql import SqlVisitor
+from ..Queryable import Queryable
 
 
 class SqliteQueryProvider(IQueryProvider):
 
     def __init__(self, db_provider):
         self.__provider = db_provider
+        self.__visitor = SqlVisitor()
 
     @property
     def db_provider(self):
         return self.__provider
 
     @property
-    def sql(self):
-        raise NotImplementedError()
+    def provider_visitor(self):
+        return self.__visitor
 
     def createQuery(self, expression):
-        raise NotImplementedError()
+        """
+        Create Queryable instance from given expression
+        :param expression: An AST expression instance
+        :return: Queryable
+        """
+        return Queryable(expression, self)
 
     def execute(self, expression):
-        self.visitor.visit(expression)
-        expression.visit_children(self.visitor)
+        """
+        Executes the SQL using the instance's db_provider
+        :param expression: An AST expression instance
+        :return: db_provider cursor object
+        """
         cursor = self.db_provider.connection.cursor()
-        cursor.execute(self.sql)
+        queryable = self.createQuery(expression)
+        cursor.execute(queryable.sql)
         return cursor
+
