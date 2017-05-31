@@ -230,9 +230,9 @@ class SqliteDbConnection(DbConnectionBase):
             sql = u"CREATE INDEX {0} ON {1}({2});".format(index_name, model.table_name(), column_name)
             self.connection.execute(sql)
 
-    def query(self, model):
+    def query(self, expression):
         query_provider = SqliteQueryProvider(self)
-        return query_provider.createQuery(ModelExpression(model))
+        return query_provider.createQuery(expression)
 
     def update(self, model):
         columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)

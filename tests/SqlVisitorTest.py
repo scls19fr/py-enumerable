@@ -1,9 +1,13 @@
 from unittest import TestCase
 from .TestModels import Student
+from py_linq.queryable.Queryable import Queryable
 from py_linq.queryable.expressions import SelectExpression
 from py_linq.queryable.expressions.unary import *
 from py_linq.queryable.expressions.binary import *
 from py_linq.queryable.visitors.sql import SqlVisitor
+from py_linq.queryable.db_providers import SqliteDbConnection
+from py_linq.queryable.providers.SqliteQueryProvider import SqliteQueryProvider
+from . import _sqlite_db_path
 
 
 class SqlVisitorTest(TestCase):
@@ -53,6 +57,17 @@ class SqlVisitorTest(TestCase):
         visitor_sql = self.visitor.visit(self.table_expression).value
         self.assertEquals(visitor_sql.lower(), self.table_select_sql.lower(), "{0} does not match {1} - TableExpression".format(
             visitor_sql,
+            self.table_select_sql
+        ))
+
+    def test_queryable_generation(self):
+        db_provider = SqliteDbConnection(_sqlite_db_path)
+        provider = SqliteQueryProvider(db_provider)
+        queryable = provider.createQuery(self.table_expression)
+        self.assertIsInstance(queryable, Queryable)
+
+        self.assertEquals(queryable.sql.lower(), self.table_select_sql.lower(), "{0} does not match {1} - SqliteQueryProvider".format(
+            queryable.sql,
             self.table_select_sql
         ))
 
