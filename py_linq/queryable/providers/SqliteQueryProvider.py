@@ -1,6 +1,6 @@
+from ..query.Queryable import Queryable
 from ..providers import IQueryProvider
 from ..visitors.sql import SqlVisitor
-from ..Queryable import Queryable
 
 
 class SqliteQueryProvider(IQueryProvider):

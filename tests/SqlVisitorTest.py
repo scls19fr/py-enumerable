@@ -1,13 +1,13 @@
 from unittest import TestCase
-from .TestModels import Student
-from py_linq.queryable.Queryable import Queryable
-from py_linq.queryable.expressions import SelectExpression
-from py_linq.queryable.expressions.unary import *
-from py_linq.queryable.expressions.binary import *
-from py_linq.queryable.visitors.sql import SqlVisitor
+
 from py_linq.queryable.db_providers import SqliteDbConnection
+from py_linq.queryable.expressions import CountExpression
+from py_linq.queryable.expressions.binary import *
 from py_linq.queryable.providers.SqliteQueryProvider import SqliteQueryProvider
+from py_linq.queryable.query.Queryable import Queryable
+from py_linq.queryable.visitors.sql import SqlVisitor
 from . import _sqlite_db_path
+from .TestModels import Student
 
 
 class SqlVisitorTest(TestCase):
@@ -58,6 +58,15 @@ class SqlVisitorTest(TestCase):
         self.assertEquals(visitor_sql.lower(), self.table_select_sql.lower(), "{0} does not match {1} - TableExpression".format(
             visitor_sql,
             self.table_select_sql
+        ))
+
+    def test_count_expression(self):
+        count_expression = BinaryExpression(Student, CountExpression(Student), StringExpression(Student, "FROM"), StringExpression(Student, Student.__table_name__))
+        visitor_sql = self.visitor.visit(count_expression).value
+        desired_sql = "SELECT COUNT(*) FROM student"
+        self.assertEquals(visitor_sql.lower(), desired_sql.lower(), "{0} does not match {1} - CountExpression".format(
+            visitor_sql,
+            desired_sql
         ))
 
     def test_queryable_generation(self):

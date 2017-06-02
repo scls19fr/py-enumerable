@@ -157,6 +157,7 @@ class SqliteDbConnection(DbConnectionBase):
     def __init__(self, connection_uri):
         super(SqliteDbConnection, self).__init__(connection_uri)
         self._provider_config = SqliteUriParser(connection_uri).parse_uri()
+        self._query_provider = SqliteQueryProvider(self)
 
     @property
     def driver(self):
@@ -231,8 +232,7 @@ class SqliteDbConnection(DbConnectionBase):
             self.connection.execute(sql)
 
     def query(self, expression):
-        query_provider = SqliteQueryProvider(self)
-        return query_provider.createQuery(expression)
+        return self._query_provider.createQuery(expression)
 
     def update(self, model):
         columns, column_values = super(SqliteDbConnection, self)._generate_columns_and_values(model)
