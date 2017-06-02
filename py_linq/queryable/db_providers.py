@@ -286,6 +286,10 @@ class SqliteDbConnection(DbConnectionBase):
         )
         self.connection.execute(sql)
 
+    def execute_scalar(self, sql):
+        print sql
+        self.connection.execute(sql).fetchone()
+
 
 
 

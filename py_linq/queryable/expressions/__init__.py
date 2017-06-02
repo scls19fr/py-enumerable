@@ -1,4 +1,3 @@
-
 class AST(object):
     __class_type__ = None
 
@@ -8,6 +7,9 @@ class AST(object):
         :param T: object type. Similar to generics
         """
         self.__class_type__ = T
+
+    def can_reduce(self, node):
+        return False
 
     def visit(self, visitor):
         return visitor.visit(self)
@@ -39,6 +41,7 @@ class BinaryExpression(AST):
         self.operator = op
         self.right = right
         super(BinaryExpression, self).__init__(T)
+
 
 
 class SelectExpression(AST):

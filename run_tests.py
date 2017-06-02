@@ -7,7 +7,9 @@ testclasses = [
     'tests.Functions',
     'tests.SqliteConnection',
     'tests.Proxies',
-    'tests.SqlVisitorTest'
+    'tests.ExpressionTreeTest',
+    'tests.SqlVisitorTest',
+    'tests.QueryableTest'
 ]
 suite = unittest.TestLoader().loadTestsFromNames(testclasses)
 unittest.TextTestRunner(verbosity=2).run(suite)

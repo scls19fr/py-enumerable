@@ -12,16 +12,6 @@ from .TestModels import Student
 
 class SqlVisitorTest(TestCase):
     def setUp(self):
-        #self.student1 = Student()
-        #self.student.student_id = 1
-        #self.student.first_name = "Bruce"
-        #self.student.last_name = "Fenske"
-
-        #self.student2 = Student()
-        #self.student.student_id = 2
-        #self.student.first_name = "Dustin"
-        #self.student.last_name = "Mudryk"
-
         self.select_text = "SELECT student_id AS student_id, first_name AS first_name, last_name AS last_name"
         self.table_select_sql = self.select_text + " FROM " + Student.__table_name__
         self.table_expression = TableExpression(Student)
