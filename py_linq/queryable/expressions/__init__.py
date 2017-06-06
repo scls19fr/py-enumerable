@@ -43,7 +43,6 @@ class BinaryExpression(AST):
         super(BinaryExpression, self).__init__(T)
 
 
-
 class SelectExpression(AST):
     def __init__(self, T, func=None):
         self.func = func
@@ -53,4 +52,6 @@ class SelectExpression(AST):
 class CountExpression(AST):
     def __init__(self, T):
         super(CountExpression, self).__init__(T)
+
+
 

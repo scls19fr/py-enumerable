@@ -33,6 +33,14 @@ class QueryableTest(TestCase):
         count = self.conn.query(TableExpression(Student)).count()
         self.assertEquals(count, 2, "Number of students inserted should equal 2 - get {0}".format(count))
 
+    def test_take(self):
+        query = self.conn.query(TableExpression(Student)).take(1)
+        result = []
+        for r in query:
+            result.append(r)
+        self.assertEquals(len(result), 1, "Appears that take expression is not working")
+        self.assertEquals(result[0][0], 1, "Student ID should be 1")
+
     def tearDown(self):
         if self.conn is not None:
             self.conn.connection.close()

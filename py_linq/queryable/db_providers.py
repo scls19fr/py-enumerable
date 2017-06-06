@@ -287,8 +287,12 @@ class SqliteDbConnection(DbConnectionBase):
         self.connection.execute(sql)
 
     def execute_scalar(self, sql):
-        print sql
-        self.connection.execute(sql).fetchone()
+        cursor = self.connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        if result is None:
+            raise Exception(u"No scalar result from {0}".format(sql))
+        return result[0]
 
 
 

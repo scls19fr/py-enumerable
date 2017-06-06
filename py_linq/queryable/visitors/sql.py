@@ -17,6 +17,8 @@ class SqlVisitor(IExpressionVisitor):
             return expression
         elif isinstance(expression, CountExpression):
             return self.visit(StringExpression(expression.__class_type__, "SELECT COUNT(*)"))
+        elif isinstance(expression, TakeExpression):
+            return self.visit(StringExpression(expression.__class_type__, "LIMIT {0}".format(expression.value)))
         # Select
         elif isinstance(expression, SelectExpression):
             return self._visit_select(expression)
