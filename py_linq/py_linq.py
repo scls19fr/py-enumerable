@@ -1,7 +1,7 @@
 __author__ = 'ViraLogic Software'
 
 import itertools
-from exceptions import *
+from .exceptions import *
 
 class Enumerable(object):
     def __init__(self, data=[]):

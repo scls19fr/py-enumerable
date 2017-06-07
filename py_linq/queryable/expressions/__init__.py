@@ -21,12 +21,12 @@ class UnaryExpression(AST):
         Constructor
         :param arg: arg
         """
-        self.__arg = arg
+        self._arg = arg
         super(UnaryExpression, self).__init__(T)
 
     @property
     def value(self):
-        return self.__arg
+        return self._arg
 
 
 class BinaryExpression(AST):
@@ -52,6 +52,28 @@ class SelectExpression(AST):
 class CountExpression(AST):
     def __init__(self, T):
         super(CountExpression, self).__init__(T)
+
+
+class SkipTakeExpression(AST):
+    def __init__(self, T, limit=-1, offset=0):
+        if not isinstance(limit, int):
+            raise Exception(u"Limit argument {0} must be an integer".format(limit))
+        if limit < -1:
+            raise Exception(u"Limit argument must be at least -1")
+        if not isinstance(offset, int):
+            raise Exception(u"Offset argument must be an integer".format(offset))
+        if offset < 0:
+            raise Exception(u"Offset argument must be at least 0")
+        self.limit = limit
+        self.offset = offset
+        super(SkipTakeExpression, self).__init__(T)
+
+    def can_reduce(self, node):
+        if isinstance(node, SkipTakeExpression):
+            self.limit = max([self.limit, node.limit]) if self.limit < 0 else min([self.limit, node.limit])
+            self.offset = self.offset + node.offset
+            return True
+        return False
 
 
 

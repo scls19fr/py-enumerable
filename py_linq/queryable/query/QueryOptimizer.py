@@ -13,5 +13,5 @@ class QueryOptimizer(object):
 
     def optimize_tree(self):
         for node in self.expression_tree:
-            if node.can_reduce(self.expression_tree.peek):
+            while node.can_reduce(self.expression_tree.peek):
                 self.expression_tree.remove_expression(self.expression_tree.peek)

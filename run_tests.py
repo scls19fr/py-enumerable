@@ -1,5 +1,3 @@
-__author__ = 'Viralogic Software'
-
 import unittest
 
 testclasses = [
@@ -8,7 +6,6 @@ testclasses = [
     'tests.SqliteConnection',
     'tests.Proxies',
     'tests.ExpressionTreeTest',
-    'tests.SqlVisitorTest',
     'tests.QueryableTest'
 ]
 suite = unittest.TestLoader().loadTestsFromNames(testclasses)

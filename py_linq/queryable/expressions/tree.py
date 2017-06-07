@@ -10,6 +10,9 @@ class ExpressionTree(object):
         self.__position = -1
         self.__current = None
 
+    def __len__(self):
+        return self.length
+
     @property
     def current(self):
         """
@@ -47,6 +50,10 @@ class ExpressionTree(object):
         if self.length == 0 or self.__position == self.length - 1:
             return None
         return self.__expressions[self.__position + 1]
+
+    def expression_at(self, i):
+        self.__position = i - 1
+        return self.peek
 
     def __iter__(self):
         while self.next is not None:
