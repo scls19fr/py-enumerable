@@ -1,5 +1,5 @@
 from . import UnaryExpression
-from .tree import ExpressionTree
+from .tree import ExpressionTree, AndExpressionTree, OrExpressionTree
 from ... import Enumerable
 
 
@@ -139,11 +139,33 @@ class LambdaExpression(StringExpression):
         lambda_split = s.split("=>")
         if len(lambda_split) != 2:
             raise Exception("LambdaExpression: invalid lambda string. Need a variable")
+
         variable = lambda_split[0].strip()
-        tokens = Enumerable(lambda_split[1].split(' ')).where(lambda x: x is not None and len(x) > 0).select(lambda x: x.strip())
-        for t in tokens:
-            expression = LambdaExpression.generate_expression(T, variable, t)
-            et.add_expression(expression)
+        tokens = Enumerable(lambda_split[1].split(' ')) \
+            .where(lambda x: x is not None and len(x) > 0) \
+            .select(lambda x: x.strip()).to_list()
+
+        if u"and" in tokens or u"&&" in tokens:
+            ands = lambda_split[1].split(u"and") if u"and" in tokens else []
+            ands.extend(lambda_split[1].split(u"&&") if u"&&" in tokens else [])
+            if len(ands) > 0:
+                andTree = AndExpressionTree(T)
+                for a in ands:
+                    andTree.add_expression(LambdaExpression(T, u"{0} => {1}".format(variable, a)))
+                et.add_expression(andTree)
+
+        elif u"or" in tokens or u"||" in tokens:
+            ors = lambda_split[1].split(u"or") if u"or" in tokens else []
+            ors.extend(lambda_split[1].split(u"||") if u"||" in tokens else [])
+            if len(ors) > 0:
+                orTree = OrExpressionTree(T)
+                for o in ors:
+                    orTree.add_expression(LambdaExpression(T, u"{0} => {1}".format(variable, o)))
+                et.add_expression(orTree)
+        else:
+            for t in tokens:
+                expression = LambdaExpression.generate_expression(T, variable, t)
+                et.add_expression(expression)
         return et
 
     @staticmethod
@@ -170,4 +192,5 @@ class LambdaExpression(StringExpression):
     def __generate_property_expression(T, variable, token):
         token = unicode(token)
         return PropertyExpression(T, token[len(variable):])
+
 

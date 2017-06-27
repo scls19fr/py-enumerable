@@ -16,19 +16,6 @@ class TableExpression(BinaryExpression):
         return False
 
 
-class ClauseExpression(BinaryExpression):
-    def __init__(self, T, variable, logical_op, operand):
-        super(ClauseExpression, self).__init__(T, variable, logical_op, operand)
-
-
-class AndExpression(ClauseExpression):
-    def __init__(self, T, variable, logical_op, operand):
-        super(AndExpression, self).__init__(T, variable, logical_op, operand)
-
-
-class OrExpression(ClauseExpression):
-    def __init__(self, T, variable, logical_op, operand):
-        super(AndExpression, self).__init__(T, variable, logical_op, operand)
 
 
 

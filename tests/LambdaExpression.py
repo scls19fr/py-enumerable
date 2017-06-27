@@ -1,5 +1,5 @@
 from unittest import TestCase
-from py_linq.queryable.expressions.unary import StringExpression, LambdaExpression, OperatorFactory, EqualsExpression, PropertyExpression, OperatorExpression
+from py_linq.queryable.expressions.unary import *
 from py_linq.queryable.expressions.tree import ExpressionTree
 from .TestModels import Student
 
@@ -23,3 +23,9 @@ class TestLambdaExpression(TestCase):
 
     def test_invalid_expression(self):
         self.assertRaises(Exception, LambdaExpression, [Student, "x.first_name == \"Bruce\""])
+
+    def test_and_expression(self):
+        l = LambdaExpression(Student, "x => x.first_name == 'Bruce' and x.last_name == 'Fenske'")
+        self.assertEquals(l.expression.length, 1, "Expression tree of conjuction statement is 1 node")
+        l = LambdaExpression(Student, "x => x.first_name == 'Bruce' && x.last_name == 'Fenske'")
+        self.assertEquals(l.expression.length, 1, "Expression tree of conjustion statement is 1 node")

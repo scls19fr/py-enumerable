@@ -6,9 +6,9 @@ class ExpressionTree(object):
     Data structure to store AST expressions and provide mechanisms for traversing, inserting, and deleting expressions
     """
     def __init__(self):
-        self.__expressions = []
-        self.__position = -1
-        self.__current = None
+        self._expressions = []
+        self._position = -1
+        self._current = None
 
     def __len__(self):
         return self.length
@@ -19,15 +19,15 @@ class ExpressionTree(object):
         Returns the current AST subtree in the tree
         :return: AST expression
         """
-        return self.__current
+        return self._current
 
     @property
     def length(self):
-        return len(self.__expressions)
+        return len(self._expressions)
 
     @property
     def position(self):
-        return self.__position
+        return self._position
 
     @property
     def next(self):
@@ -35,10 +35,10 @@ class ExpressionTree(object):
         Gets the next AST subtree in the tree
         :return: AST expression if next one exists, otherwise None
         """
-        if self.length == 0 or self.__position == self.length - 1:
+        if self.length == 0 or self._position == self.length - 1:
             return None
-        self.__position += 1
-        self.__current = self.__expressions[self.__position]
+        self._position += 1
+        self._current = self._expressions[self._position]
         return self.current
 
     @property
@@ -47,23 +47,41 @@ class ExpressionTree(object):
         Looks at the next AST substree in the tree
         :return: The next AST substree if one exists, otherwise None
         """
-        if self.length == 0 or self.__position == self.length - 1:
+        if self.length == 0 or self._position == self.length - 1:
             return None
-        return self.__expressions[self.__position + 1]
+        return self._expressions[self._position + 1]
 
     def expression_at(self, i):
-        self.__position = i - 1
+        self._position = i - 1
         return self.peek
 
     def __iter__(self):
         while self.next is not None:
             yield self.current
-        self.__position = -1
+        self._position = -1
 
     def add_expression(self, expression):
-        if not isinstance(expression, AST):
+        if not hasattr(expression, u"__class_type__"):
             return
-        self.__expressions.append(expression)
+        self._expressions.append(expression)
 
     def remove_expression(self, expression):
-        self.__expressions.remove(expression)
+        self._expressions.remove(expression)
+
+
+class ClauseExpressionTree(ExpressionTree):
+    __class_type__ = None
+
+    def __init__(self, T):
+        self.__class_type__ = T
+        super(ClauseExpressionTree, self).__init__()
+
+
+class AndExpressionTree(ClauseExpressionTree):
+    def __init__(self, T):
+        super(AndExpressionTree, self).__init__(T)
+
+
+class OrExpressionTree(ClauseExpressionTree):
+    def __init__(self, T):
+        super(OrExpressionTree, self).__init__(T)
