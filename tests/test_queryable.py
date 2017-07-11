@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from . import _sqlite_db_path
 from py_linq.queryable.expressions.binary import TableExpression
-from .TestModels import Student
+from .models import Student
 from py_linq.queryable.db_providers import SqliteDbConnection
 from py_linq.exceptions import NoElementsError
 

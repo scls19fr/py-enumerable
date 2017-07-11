@@ -1,7 +1,7 @@
 from unittest import TestCase
 from py_linq.queryable.expressions.unary import *
 from py_linq.queryable.expressions.tree import ExpressionTree
-from .TestModels import Student
+from .models import Student
 
 
 class TestLambdaExpression(TestCase):

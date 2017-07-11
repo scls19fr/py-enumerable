@@ -3,7 +3,7 @@ from py_linq.queryable.expressions.tree import ExpressionTree
 from py_linq.queryable.expressions import *
 from py_linq.queryable.expressions.unary import StringExpression
 from py_linq.queryable.expressions.binary import TableExpression
-from .TestModels import Student
+from .models import Student
 
 class ExpressionTreeTest(TestCase):
     def setUp(self):

@@ -8,7 +8,7 @@ from tests import _sqlite_db_path
 from py_linq.queryable.db_providers import SqliteDbConnection
 from py_linq.queryable.parsers import ProviderConfig
 from py_linq.queryable.managers import ConnectionManager
-from .TestModels import *
+from .models import *
 
 
 class TestSqlite(TestCase):
@@ -27,36 +27,36 @@ class TestSqlite(TestCase):
         self.test_connection()
 
     def test_table_creation(self):
-        self.conn.create_table(TestPrimary)
-        self.conn.create_table(TestForeignKey)
+        self.conn.create_table(StubPrimary)
+        self.conn.create_table(StubForeignKey)
         self.conn.save_changes()
 
         sql = u"SELECT name FROM sqlite_master WHERE type='table' AND name='{0}';"
-        sql_primary = sql.format(TestPrimary.table_name())
+        sql_primary = sql.format(StubPrimary.table_name())
         cursor = self.conn.connection.cursor()
         cursor.execute(sql_primary)
         result = cursor.fetchone()
 
         self.assertIsNotNone(result)
-        self.assertEqual(result[0].lower(), TestPrimary.table_name().lower())
+        self.assertEqual(result[0].lower(), StubPrimary.table_name().lower())
 
-        sql_foreign = sql.format(TestForeignKey.table_name())
+        sql_foreign = sql.format(StubForeignKey.table_name())
         cursor = self.conn.connection.cursor()
         cursor.execute(sql_foreign)
         result = cursor.fetchone()
 
         self.assertIsNotNone(result)
-        self.assertEqual(result[0].lower(), TestForeignKey.table_name().lower())
+        self.assertEqual(result[0].lower(), StubForeignKey.table_name().lower())
 
     def test_index_creation(self):
-        self.conn.create_table(TestIntUnique)
-        self.conn.create_indexes(TestIntUnique)
+        self.conn.create_table(StubIntUnique)
+        self.conn.create_indexes(StubIntUnique)
         self.conn.save_changes()
 
         sql = u"SELECT name FROM sqlite_master WHERE type = 'index' AND name='{0}';"
-        unique_column = filter(lambda c: c[1].is_unique, TestIntUnique.inspect_columns())
+        unique_column = filter(lambda c: c[1].is_unique, StubIntUnique.inspect_columns())
         if len(unique_column) != 1:
-            raise Exception(u"Incorrect number of unique columns in {0}".format(TestIntUnique.table_name()))
+            raise Exception(u"Incorrect number of unique columns in {0}".format(StubIntUnique.table_name()))
         column_name = unique_column[0][0]
         index_name = u"{0}_index".format(column_name)
         unique_sql = sql.format(index_name)
@@ -74,12 +74,12 @@ class TestSqlite(TestCase):
         """
         Note how have to insert primary key manually if the primary key is not int type
         """
-        self.conn.create_table(TestPrimaryString)
+        self.conn.create_table(StubPrimaryString)
         self.conn.save_changes()
 
         pk = unicode(uuid.uuid4())
 
-        primary = TestPrimaryString()
+        primary = StubPrimaryString()
         primary.test_pk = pk
         self.conn.add(primary)
         self.conn.save_changes()
@@ -94,10 +94,10 @@ class TestSqlite(TestCase):
         self.assertEqual(result[0], pk)
 
     def _insert_test_primary(self):
-        self.conn.create_table(TestPrimary)
+        self.conn.create_table(StubPrimary)
         self.conn.save_changes()
 
-        test_primary = TestPrimary()
+        test_primary = StubPrimary()
         test_primary.test_pk = self.conn.add(test_primary)
         self.conn.save_changes()
 
@@ -124,10 +124,10 @@ class TestSqlite(TestCase):
         self.assertEqual(result[0], 0)
 
     def test_update(self):
-        self.conn.create_table(TestUpdateModel)
+        self.conn.create_table(StubUpdateModel)
         self.conn.save_changes()
 
-        update_test = TestUpdateModel()
+        update_test = StubUpdateModel()
         update_test.update_col = 5
         update_test.key = self.conn.add(update_test)
         self.conn.save_changes()
@@ -162,14 +162,14 @@ class TestSqlite(TestCase):
 class TestModelClass(TestCase):
 
     def test_num_columns(self):
-        num_columns = len(TestModel.inspect_columns())
+        num_columns = len(StubModel.inspect_columns())
         self.assertEqual(1, num_columns)
 
     def test_int_column(self):
-        self.assertEqual(TestModel.test_int_column.column_name, u'int_column')
-        self.assertEqual(TestModel.test_int_column.column_type, int)
+        self.assertEqual(StubModel.test_int_column.column_name, u'int_column')
+        self.assertEqual(StubModel.test_int_column.column_type, int)
 
-        name, col = TestModel2.inspect_columns()[0]
+        name, col = StubModel2.inspect_columns()[0]
         self.assertEqual(name, u'test_int_column')
-        self.assertEqual(TestModel2.test_int_column.column_type, int)
+        self.assertEqual(StubModel2.test_int_column.column_type, int)
 

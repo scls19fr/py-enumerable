@@ -3,40 +3,43 @@ __author__ = 'Bruce.Fenske'
 from py_linq.queryable.entity.model import Model
 from py_linq.queryable.entity.column_types import Column, PrimaryKey, ForeignKey
 
-class TestModel(Model):
+class StubModel(Model):
     __table_name__ = u'test_table'
     test_int_column = Column(int, 'int_column')
 
 
-class TestModel2(Model):
+class StubModel2(Model):
     __table_name__ = u'test_table'
     test_int_column = Column(int)
 
 
-class TestPrimary(Model):
+class StubPrimary(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(int, 'int_pk')
 
 
-class TestPrimaryString(Model):
+class StubPrimaryString(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(unicode, 'unicode_pk')
 
 
-class TestIntUnique(Model):
+class StubIntUnique(Model):
     __table_name__ = u"test_table"
     test_pk = PrimaryKey(int)
     test_unique = Column(int, 'int_column', is_unique=True)
 
-class TestForeignKey(Model):
+
+class StubForeignKey(Model):
     __table_name__ = u"foreign_key_table"
     test_pk = PrimaryKey(int, 'int_pk')
-    test_fk = ForeignKey(TestPrimary, 'test_fk', is_nullable=False)
+    test_fk = ForeignKey(StubPrimary, 'test_fk', is_nullable=False)
 
-class TestUpdateModel(Model):
+
+class StubUpdateModel(Model):
     __table_name__ = u"test_update_table"
     key = PrimaryKey(int, 'key_column')
     update_col = Column(int, 'update_column')
+
 
 class Student(Model):
     __table_name__ = u"student"
