@@ -193,4 +193,9 @@ class LambdaExpression(StringExpression):
         token = unicode(token)
         return PropertyExpression(T, token[len(variable):])
 
+    def __repr__(self):
+        print self.value + " --> "
+        for n in self.expression:
+            print n
+
 

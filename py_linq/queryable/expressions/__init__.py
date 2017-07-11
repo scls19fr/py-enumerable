@@ -14,6 +14,9 @@ class AST(object):
     def visit(self, visitor):
         return visitor.visit(self)
 
+    def __repr__(self):
+        return u"{0}({1})".format(self.__class__.__name__, self.__class_type__)
+
 
 class UnaryExpression(AST):
     def __init__(self, T, arg):
@@ -27,6 +30,9 @@ class UnaryExpression(AST):
     @property
     def value(self):
         return self._arg
+
+    def __repr__(self):
+        return u"{0}({1}, {2})".format(self.__class__.__name__, self.__class_type__, self.value)
 
 
 class BinaryExpression(AST):
