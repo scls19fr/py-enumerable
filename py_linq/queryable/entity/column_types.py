@@ -1,7 +1,6 @@
-__author__ = 'Bruce.Fenske'
-
 from ...py_linq import Enumerable
 from ...exceptions import InvalidArgumentError
+
 
 class Column(object):
 

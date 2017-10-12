@@ -46,4 +46,5 @@ class Student(Model):
     student_id = PrimaryKey(int, "student_id")
     first_name = Column(unicode, "first_name")
     last_name = Column(unicode, "last_name")
+    gpa = Column(int, "gpa")
 

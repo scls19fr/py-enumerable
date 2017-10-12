@@ -21,11 +21,13 @@ class QueryableTest(TestCase):
         self.student1.student_id = 1
         self.student1.first_name = u"Bruce"
         self.student1.last_name = u"Fenske"
+        self.student1.gpa = 50
 
         self.student2 = Student()
         self.student2.student_id = 2
         self.student2.first_name = u"Abraham"
         self.student2.last_name = u"Mudryk"
+        self.student2.gpa = 9
 
         self.conn.add(self.student1)
         self.conn.add(self.student2)

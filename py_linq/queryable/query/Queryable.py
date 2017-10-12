@@ -29,7 +29,7 @@ class Queryable(object):
                 proxy = DynamicModelProxy(self.__class_type__)
                 for i in range(0, len(r), 1):
                     result_value = r[i]
-                    k = list(proxy.columns.keys())[i]
+                    k = cursor.description[i][0]
                     proxy.__setattr__(k, result_value)
                 yield proxy
             # TODO: if returning a subset of columns
@@ -67,7 +67,7 @@ class Queryable(object):
         return self
 
     def first(self):
-        self.__expression_tree.add_expression(SkipTakeExpression(self.__class_type__, limit = 1))
+        self.__expression_tree.add_expression(SkipTakeExpression(self.__class_type__, limit=1))
         return Enumerable(self).first()
 
     def first_or_default(self):
