@@ -1,7 +1,4 @@
-from ..expressions.tree import ExpressionTree
-from .QueryOptimizer import QueryOptimizer
 from ..expressions import *
-from ..expressions.unary import *
 from ..entity.proxy import DynamicModelProxy
 from py_linq import Enumerable
 from py_linq.exceptions import NoElementsError
@@ -11,64 +8,43 @@ class Queryable(object):
     __class_type__ = None
 
     def __init__(self, expression, query_provider):
-        self.__expression_tree = ExpressionTree()
-        self.__expression_tree.add_expression(expression)
+        self.__exp = expression
         self.__provider = query_provider
-        self.__class_type__ = expression.__class_type__
 
     def __iter__(self):
-        cursor = self.__provider.db_provider.connection.cursor()
-        num_cols = self.__class_type__.inspect_columns()
-        cursor.execute(self.sql)
-        for r in cursor:
-            # if returning just one column
-            if len(r) == 1:
-                yield r[0]
-            # if returning all the columns
-            elif len(r) == len(num_cols):
-                proxy = DynamicModelProxy(self.__class_type__)
-                for i in range(0, len(r), 1):
-                    result_value = r[i]
-                    k = cursor.description[i][0]
-                    proxy.__setattr__(k, result_value)
-                yield proxy
-            # TODO: if returning a subset of columns
-            else:
-                raise NotImplementedError()
+        raise NotImplementedError()
 
     @property
     def provider(self):
         return self.__provider
 
     @property
-    def sql(self):
-        optimizer = QueryOptimizer(self.__expression_tree)
-        optimizer.optimize_tree()
-        sql = []
-        for ast in self.__expression_tree:
-            sql.append(ast.visit(self.provider.provider_visitor).value)
-        result = u" ".join(sql)
-        return result
+    def type(self):
+        return self.expression.type
 
-    def select(self, func=None):
-        self.__expression_tree.add_expression(SelectExpression(self.__class_type__, func))
+    @property
+    def expression(self):
+        return self.__exp
+
+    @property
+    def sql(self):
+        raise NotImplementedError()
+
+    def select(self, func):
+        self.__exp = UnaryExpression(SelectExpression(self.type, func), self.expression)
         return self
 
     def count(self):
-        self.__expression_tree.add_expression(CountExpression(self.__class_type__))
-        return self.__provider.db_provider.execute_scalar(self.sql)
+        raise NotImplementedError()
 
     def take(self, limit):
-        self.__expression_tree.add_expression(SkipTakeExpression(self.__class_type__, limit=limit))
-        return self
+        raise NotImplementedError()
 
     def skip(self, offset):
-        self.__expression_tree.add_expression(SkipTakeExpression(self.__class_type__, offset=offset))
-        return self
+        raise NotImplementedError()
 
     def first(self):
-        self.__expression_tree.add_expression(SkipTakeExpression(self.__class_type__, limit=1))
-        return Enumerable(self).first()
+        raise NotImplementedError()
 
     def first_or_default(self):
         try:
@@ -77,7 +53,7 @@ class Queryable(object):
             return None
 
     def to_list(self):
-        return Enumerable(self).to_list()
+        raise NotImplementedError()
 
 
 

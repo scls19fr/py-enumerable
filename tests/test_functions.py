@@ -1,5 +1,3 @@
-__author__ = 'Viralogic Software'
-
 from unittest import TestCase
 from py_linq import Enumerable
 from tests import _empty, _simple, _complex, _locations

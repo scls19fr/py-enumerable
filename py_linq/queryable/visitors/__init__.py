@@ -2,11 +2,17 @@ import abc
 
 
 class IExpressionVisitor(object):
-    def __init__(self):
-        super(IExpressionVisitor, self).__init__()
 
     @abc.abstractmethod
-    def visit(self, expression):
+    def visit_UnaryExpression(self, expression):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def visit_SelectExpression(self, expression):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def visit_TableExpression(self, expression):
         raise NotImplementedError()
 
 

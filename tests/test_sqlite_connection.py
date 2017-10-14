@@ -1,5 +1,3 @@
-__author__ = 'Bruce.Fenske'
-
 import sqlite3
 import os
 import uuid
