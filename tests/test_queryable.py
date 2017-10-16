@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 from . import _sqlite_db_path
-from py_linq.queryable.expressions import TableExpression
+from py_linq.queryable.expressions import *
 from .models import Student
 from py_linq.queryable.db_providers import SqliteDbConnection
 from py_linq.exceptions import NoElementsError
@@ -31,16 +31,37 @@ class QueryableTest(TestCase):
         self.conn.add(self.student2)
         self.conn.save_changes()
 
-    # def test_count(self):
-    #     count = self.conn.query(TableExpression(Student)).count()
-    #     self.assertEquals(count, 2, "Number of students inserted should equal 2 - get {0}".format(count))
-    #
-    # def test_take(self):
-    #     result = self.conn.query(TableExpression(Student)).take(1).to_list()
-    #     self.assertEquals(len(result), 1, u"Appears that take expression is not working")
-    #     self.assertEquals(result[0].student_id, 1, u"Student ID should be 1 - get {0}".format(result[0].student_id))
-    #     self.assertEquals(result[0].first_name, u"Bruce", u"Bruce should be the first name - get {0}".format(result[0].first_name))
-    #     self.assertEquals(result[0].last_name, u"Fenske", u"Fenske should be the last name - get {0}".format(result[0].last_name))
+    def test_sql(self):
+        sql = self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))).sql
+        self.assertTrue(sql.startswith(u"SELECT"))
+        self.assertTrue(sql.endswith(u"FROM student"))
+        self.assertTrue(u"student.first_name AS first_name" in sql)
+        self.assertTrue(u"student.student_id AS student_id" in sql)
+        self.assertTrue(u"student.last_name AS last_name" in sql)
+        self.assertTrue(u"student.gpa AS gpa")
+
+    def test_count(self):
+        count = self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))).count()
+        self.assertEquals(count, 2, u"Number of students inserted should equal 2 - get {0}".format(count))
+
+    def test_take(self):
+        result = self.conn.query(
+            UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))
+        ).take(1).to_list()
+        self.assertEquals(len(result), 1, u"Appears that take expression is not working")
+        self.assertEquals(
+            result[0].student_id,
+            1,
+            u"Student ID should be 1 - get {0}".format(result[0].student_id)
+        )
+        self.assertEquals(
+            result[0].first_name,
+            u"Bruce", u"Bruce should be the first name - get {0}".format(result[0].first_name)
+        )
+        self.assertEquals(
+            result[0].last_name,
+            u"Fenske", u"Fenske should be the last name - get {0}".format(result[0].last_name)
+        )
     #
     #     result = self.conn.query(TableExpression(Student)).skip(1).take(1).to_list()
     #     self.assertEquals(len(result), 1, u"Appears that skip then take is not working")

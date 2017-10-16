@@ -49,8 +49,11 @@ class Model(object):
         """
         columns = cls.get_column_members()
 
-        #Need to reorder the columns so that primary key is first for table creation. So just have this method
-        #return the columns in the correct order everytime.
+        """
+        # Need to reorder the columns so that primary key is first for table creation. So just have this method
+        # return the columns in the correct order everytime.
+        """
+
         pk_col = cls.get_primary_key_column()
         fk_col = filter(lambda c: c[1].foreign_key is not None, columns)
         rest = filter(lambda c: not c[1].is_primary_key and c[1].foreign_key is None, columns)

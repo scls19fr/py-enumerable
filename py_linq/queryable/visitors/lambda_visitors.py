@@ -94,9 +94,11 @@ class SqlLambdaTranslator(ast.NodeVisitor):
     def visit_List(self, node):
         self.generic_visit(node)
         node.sql = u", ".join(Enumerable(node.elts).select(lambda x: x.select_sql))
+        node.type = list
 
     def visit_Tuple(self, node):
         self.visit_List(node)
+        node.type = tuple
 
     def visit_Dict(self, node):
         self.generic_visit(node)
@@ -105,6 +107,7 @@ class SqlLambdaTranslator(ast.NodeVisitor):
             key = node.keys[i] if not hasattr(node.keys[i], u"sql") else node.keys[i].sql
             attr.select_sql = u"{0} AS '{1}'".format(attr.sql, key)
         node.sql = u", ".join(Enumerable(node.values).select(lambda x: x.select_sql))
+        node.type = dict
 
 
 

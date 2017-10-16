@@ -4,6 +4,20 @@ import ast
 from ..visitors.lambda_visitors import SqlLambdaTranslator
 
 
+class LambdaExpression(object):
+
+    """
+    Parses a python lambda expression and returns a modified tree that contains
+    appropriate sql syntax
+    """
+    @staticmethod
+    def parse(T, func):
+        tree = meta.decompiler.decompile_func(func)
+        translator = SqlLambdaTranslator(T)
+        translator.generic_visit(tree)
+        return tree
+
+
 class Expression(object):
     __class_type__ = None
 
@@ -11,6 +25,10 @@ class Expression(object):
         if not hasattr(T, u"__table_name__"):
             raise AttributeError(u"{0} does not appear to be derived from Model".format(T.__class__.__name__))
         self.__class_type__ = T
+        self.visited = False
+
+    def __eq__(self, other):
+        return self.type == other.type and self.__repr__() == other.__repr__()
 
     @property
     def type(self):
@@ -19,6 +37,26 @@ class Expression(object):
     @abc.abstractmethod
     def visit(self, visitor):
         raise NotImplementedError()
+
+    @abc.abstractproperty
+    def children(self):
+        raise NotImplementedError()
+
+    def find(self, expression):
+        """
+        Finds first matching expression using breadth first search
+        :param expression: An expression type
+        :return: First expression that matches given expression else None
+        """
+        q = self.children
+        while len(q) > 0:
+            node = q[0]
+            if type(node) == expression:
+                return node
+            for n in node.children:
+                q.append(n)
+            q.pop(0)
+        return None
 
 
 class UnaryExpression(Expression):
@@ -31,18 +69,26 @@ class UnaryExpression(Expression):
     def visit(self, visitor):
         return visitor.visit_UnaryExpression(self)
 
+    @property
+    def children(self):
+        return [self.op, self.exp]
+
     def __repr__(self):
         return u"{0}(op={1}, exp={2})".format(self.__class__.__name__, self.op.__repr__(), self.exp.__repr__())
 
 
 class SelectExpression(Expression):
 
-    def __init__(self, T, func):
+    def __init__(self, T, func=None):
         super(SelectExpression, self).__init__(T)
         self.func = func
 
     def visit(self, visitor):
         return visitor.visit_SelectExpression(self)
+
+    @property
+    def children(self):
+        return []
 
     def __repr__(self):
         t = LambdaExpression.parse(self.type, self.func)
@@ -57,19 +103,62 @@ class TableExpression(Expression):
     def visit(self, visitor):
         return visitor.visit_TableExpression(self)
 
+    @property
+    def children(self):
+        return []
+
     def __repr__(self):
         return u"Table(table_name={0})".format(self.type.table_name)
 
 
-class LambdaExpression(object):
+class WhereExpression(Expression):
 
-    """
-    Parses a python lambda expression and returns a modified tree that contains
-    appropriate sql syntax
-    """
-    @staticmethod
-    def parse(T, func):
-        tree = meta.decompiler.decompile_func(func)
-        translator = SqlLambdaTranslator(T)
-        translator.generic_visit(tree)
-        return tree
+    def __init__(self, T, func):
+        super(WhereExpression, self).__init__(T)
+        if func is None:
+            raise Exception(u"WhereExpression must have lambda expression constructor parameter")
+        self.func = func
+
+    def visit(self, visitor):
+        return visitor.visit_WhereExpression(self)
+
+    @property
+    def children(self):
+        return []
+
+    def __repr__(self):
+        return u"Where(func={0})".format(ast.dump(LambdaExpression.parse(self.type, self.func)))
+
+
+class CountExpression(Expression):
+
+    def __init__(self, T):
+        super(CountExpression, self).__init__(T)
+
+    def visit(self, visitor):
+        return visitor.visit_CountExpression(self)
+
+    @property
+    def children(self):
+        return []
+
+    def __repr__(self):
+        return u"Count()"
+
+
+class TakeExpression(Expression):
+
+    def __init__(self, T, limit):
+        super(TakeExpression, self).__init__(T)
+        self.limit = limit
+
+    def visit(self, visitor):
+        return visitor.visit_TakeExpression(self)
+
+    @property
+    def children(self):
+        return []
+
+    def __repr__(self):
+        return u"Take(limit={0})".format(self.limit)
+
