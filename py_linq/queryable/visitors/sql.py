@@ -32,5 +32,18 @@ class SqlVisitor(IExpressionVisitor):
     def visit_CountExpression(self, expression):
         return u"SELECT COUNT(*)"
 
+    def visit_CountUnaryExpression(self, expression):
+        return u"{0} FROM ({1})".format(expression.op.visit(self), expression.exp.visit(self))
+
     def visit_TakeExpression(self, expression):
         return u"LIMIT {0}".format(expression.limit)
+
+    def visit_TakeUnaryExpression(self, expression):
+        return u"{0} {1}".format(expression.exp.visit(self), expression.op.visit(self))
+
+    def visit_SkipExpression(self, expression):
+        return u"OFFSET {0}".format(expression.skip)
+
+    def visit_SkipUnaryExpression(self, expression):
+        return u"{0} {1}".format(expression.exp.visit(self), expression.op.visit(self))
+

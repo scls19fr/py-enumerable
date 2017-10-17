@@ -28,7 +28,22 @@ class IExpressionVisitor(object):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def visit_CountUnaryExpression(self, expression):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def visit_TakeExpression(self, expression):
+        raise NotImplementedError()
+
+    def visit_TakeUnaryExpression(self, expression):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def visit_SkipExpression(self, expression):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def visit_SkipUnaryExpression(self, expression):
         raise NotImplementedError()
 
 

@@ -38,11 +38,28 @@ class TestSqlExpressions(TestCase):
     def test_count_expression(self):
         ce = UnaryExpression(Student, CountExpression(Student), self.table_expression)
         sql = self.visitor.visit(ce)
-        self.assertTrue(sql, u"SELECT COUNT(*) FROM student")
+        self.assertEqual(sql, u"SELECT COUNT(*) FROM student")
 
     def test_take_expression(self):
         qe = UnaryExpression(Student, SelectExpression(Student, lambda s: s.first_name), self.table_expression)
         te = UnaryExpression(Student, qe, TakeExpression(Student, 1))
         sql = self.visitor.visit(te)
-        self.assertTrue(sql, u"SELECT student.first_name AS first_name FROM student LIMIT 1")
+        self.assertEqual(sql, u"SELECT student.first_name AS first_name FROM student LIMIT 1")
 
+    def test_skip_expression(self):
+        qe = UnaryExpression(Student, SelectExpression(Student, lambda s: s.first_name), self.table_expression)
+        se = UnaryExpression(Student, qe, SkipExpression(Student, 1))
+        sql = self.visitor.visit(se)
+        self.assertEqual(sql, u"SELECT student.first_name AS first_name FROM student OFFSET 1")
+
+    def test_skip_limit_expression(self):
+        qe = UnaryExpression(Student, SelectExpression(Student, lambda s: s.first_name), self.table_expression)
+        se = UnaryExpression(Student, qe, SkipExpression(Student, 1))
+        te = UnaryExpression(Student, se, TakeExpression(Student, 1))
+        sql = self.visitor.visit(te)
+        self.assertEqual(sql, u"SELECT student.first_name AS first_name FROM student OFFSET 1 LIMIT 1")
+
+        te = UnaryExpression(Student, qe, TakeExpression(Student, 1))
+        se = UnaryExpression(Student, te, SkipExpression(Student, 1))
+        sql = self.visitor.visit(se)
+        self.assertEqual(sql, u"SELECT student.first_name AS first_name FROM student LIMIT 1 OFFSET 1")

@@ -56,6 +56,7 @@ class SqlLambdaTranslator(ast.NodeVisitor):
             raise AttributeError(u"No property named {0} can be found for {1}".format(node.attr, self.type.__name__))
         node.sql = u"{0}.{1}".format(self.type.table_name(), model_column[1].column_name)
         node.select_sql = u"{0} AS {1}".format(node.sql, model_column[0])
+        node.type = model_column[1].column_type
 
     def visit_And(self, node):
         node.sql = u"AND"

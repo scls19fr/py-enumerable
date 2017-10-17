@@ -146,6 +146,14 @@ class CountExpression(Expression):
         return u"Count()"
 
 
+class CountUnaryExpression(UnaryExpression):
+    def __init__(self, T, exp):
+        super(CountUnaryExpression, self).__init__(T, CountExpression(T), exp)
+
+    def visit(self, visitor):
+        return visitor.visit_CountUnaryExpression(self)
+
+
 class TakeExpression(Expression):
 
     def __init__(self, T, limit):
@@ -161,4 +169,39 @@ class TakeExpression(Expression):
 
     def __repr__(self):
         return u"Take(limit={0})".format(self.limit)
+
+
+class TakeUnaryExpression(UnaryExpression):
+
+    def __init__(self, T, exp, limit):
+        super(TakeUnaryExpression, self).__init__(T, TakeExpression(T, limit), exp)
+
+    def visit(self, visitor):
+        return visitor.visit_TakeUnaryExpression(self)
+
+
+class SkipExpression(Expression):
+
+    def __init__(self, T, skip):
+        super(SkipExpression, self).__init__(T)
+        self.skip = skip
+
+    def visit(self, visitor):
+        return visitor.visit_SkipExpression(self)
+
+    @property
+    def children(self):
+        return []
+
+    def __repr__(self):
+        return u"Skip(skip={0}".format(self.skip)
+
+
+class SkipUnaryExpression(UnaryExpression):
+
+    def __init__(self, T, exp, skip):
+        super(SkipUnaryExpression, self).__init__(T, SkipExpression(T, skip), exp)
+
+    def visit(self, visitor):
+        return visitor.visit_SkipUnaryExpression(self)
 

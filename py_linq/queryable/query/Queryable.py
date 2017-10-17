@@ -22,6 +22,7 @@ class Queryable(object):
             result_type = self.type
         else:
             t = LambdaExpression.parse(self.type, select.func)
+            print ast.dump(t)
             result_type = t.body.type
 
         cursor = self.provider.db_provider.connection.cursor()
@@ -72,15 +73,21 @@ class Queryable(object):
         return self
 
     def count(self):
-        self.__exp.op = CountExpression(self.type)
+        self.__exp = CountUnaryExpression(self.type, self.expression)
         return self.provider.db_provider.execute_scalar(self.sql)
 
     def take(self, limit):
-        self.__exp = UnaryExpression(self.type, self.__exp, TakeExpression(self.type, limit))
+        if isinstance(self.__exp, SkipUnaryExpression):
+            self.expression.exp.op.limit = limit
+        else:
+            self.__exp = TakeUnaryExpression(self.type, self.expression, limit)
         return self
 
     def skip(self, offset):
-        raise NotImplementedError()
+        if not isinstance(self.expression, TakeUnaryExpression):
+            self.__exp = TakeUnaryExpression(self.type, self.expression, -1)
+        self.__exp = SkipUnaryExpression(self.type, self.expression, offset)
+        return self
 
     def first(self):
         raise NotImplementedError()
