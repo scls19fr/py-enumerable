@@ -63,3 +63,15 @@ class TestSqlExpressions(TestCase):
         se = UnaryExpression(Student, te, SkipExpression(Student, 1))
         sql = self.visitor.visit(se)
         self.assertEqual(sql, u"SELECT student.first_name AS first_name FROM student LIMIT 1 OFFSET 1")
+
+    def test_where_expression(self):
+        we = WhereUnaryExpression(
+            Student,
+            UnaryExpression(
+                Student,
+                SelectExpression(Student, lambda s: s.gpa),
+                self.table_expression),
+            lambda s: s.gpa > 10
+        )
+        sql = self.visitor.visit(we)
+        self.assertEqual(sql, u"SELECT student.gpa AS gpa FROM student WHERE student.gpa > 10")

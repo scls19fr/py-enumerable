@@ -65,10 +65,7 @@ class QueryableTest(TestCase):
 
         result = self.conn.query(
             UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))
-        ).skip(1).take(1)\
-
-        print result.sql
-        result = result.to_list()
+        ).skip(1).take(1).to_list()
 
         self.assertEquals(
             result[0].student_id,
@@ -124,33 +121,57 @@ class QueryableTest(TestCase):
             u"Abraham",
             u"Abraham should be the first name - get {0}".format(result[0])
         )
-    #
-    # def test_first(self):
-    #     result = self.conn.query(TableExpression(Student)).first()
-    #     self.assertEquals(result.student_id, 1, u"Student ID should be 1 - get {0}".format(result.student_id))
-    #     self.assertEquals(result.first_name, u"Bruce", u"Bruce should be the first name - get {0}".format(result.first_name))
-    #     self.assertEquals(result.last_name, u"Fenske", u"Fenske should be the last name - get {0}".format(result.last_name))
-    #
-    #     self.conn.remove(self.student1)
-    #     self.conn.remove(self.student2)
-    #     self.conn.save_changes()
-    #
-    #     self.assertRaises(NoElementsError, self.conn.query(TableExpression(Student)).first)
-    #
-    # def test_first_or_default(self):
-    #     self.conn.remove(self.student1)
-    #     self.conn.save_changes()
-    #
-    #     result = self.conn.query(TableExpression(Student)).first_or_default()
-    #     self.assertEquals(result.student_id, 2, u"Student ID should be 2 - get {0}".format(result.student_id))
-    #     self.assertEquals(result.first_name, u"Abraham", u"Abraham should be the first name - get {0}".format(result.first_name))
-    #     self.assertEquals(result.last_name, u"Mudryk", u"Mudryk should be the last name - get {0}".format(result.last_name))
-    #
-    #     self.conn.remove(self.student2)
-    #     self.conn.save_changes()
-    #     result = self.conn.query(TableExpression(Student)).first_or_default()
-    #     self.assertIsNone(result, "First or Default query should be none. The Student table is empty")
 
+    def test_first(self):
+
+        result = self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))).first()
+        self.assertEquals(
+            result.student_id,
+            1,
+            u"Student ID should be 1 - get {0}".format(result.student_id)
+        )
+        self.assertEquals(
+            result.first_name,
+            u"Bruce", u"Bruce should be the first name - get {0}".format(result.first_name)
+        )
+        self.assertEquals(
+            result.last_name,
+            u"Fenske",
+            u"Fenske should be the last name - get {0}".format(result.last_name)
+        )
+
+        self.conn.remove(self.student1)
+        self.conn.remove(self.student2)
+        self.conn.save_changes()
+
+        self.assertRaises(
+            NoElementsError,
+            self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student))).first
+        )
+
+    def test_first_or_default(self):
+        self.conn.remove(self.student1)
+        self.conn.save_changes()
+
+        result = self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student)))\
+            .first_or_default()
+        self.assertEquals(result.student_id, 2, u"Student ID should be 2 - get {0}".format(result.student_id))
+        self.assertEquals(
+            result.first_name,
+            u"Abraham",
+            u"Abraham should be the first name - get {0}".format(result.first_name)
+        )
+        self.assertEquals(
+            result.last_name,
+            u"Mudryk",
+            u"Mudryk should be the last name - get {0}".format(result.last_name)
+        )
+
+        self.conn.remove(self.student2)
+        self.conn.save_changes()
+        result = self.conn.query(UnaryExpression(Student, SelectExpression(Student), TableExpression(Student)))\
+            .first_or_default()
+        self.assertIsNone(result, u"First or Default query should be none. The Student table is empty")
 
     def tearDown(self):
         if self.conn is not None:

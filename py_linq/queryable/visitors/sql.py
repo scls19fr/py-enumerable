@@ -47,3 +47,7 @@ class SqlVisitor(IExpressionVisitor):
     def visit_SkipUnaryExpression(self, expression):
         return u"{0} {1}".format(expression.exp.visit(self), expression.op.visit(self))
 
+    def visit_WhereUnaryExpression(self, expression):
+        return u"{0} {1}".format(expression.exp.visit(self), expression.op.visit(self))
+
+

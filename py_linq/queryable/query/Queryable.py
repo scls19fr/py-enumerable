@@ -90,7 +90,7 @@ class Queryable(object):
         return self
 
     def first(self):
-        raise NotImplementedError()
+        return self.take(1).as_enumerable().first()
 
     def first_or_default(self):
         try:
@@ -98,8 +98,11 @@ class Queryable(object):
         except NoElementsError:
             return None
 
+    def as_enumerable(self):
+        return Enumerable(self)
+
     def to_list(self):
-        return Enumerable(self).to_list()
+        return self.as_enumerable().to_list()
 
 
 

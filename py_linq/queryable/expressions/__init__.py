@@ -205,3 +205,30 @@ class SkipUnaryExpression(UnaryExpression):
     def visit(self, visitor):
         return visitor.visit_SkipUnaryExpression(self)
 
+
+class WhereExpression(Expression):
+
+    def __init__(self, T, func):
+        super(WhereExpression, self).__init__(T)
+        self.func = func
+
+    def visit(self, visitor):
+        return visitor.visit_WhereExpression(self)
+
+    def children(self):
+        return []
+
+    def __repr__(self):
+        return u"Where(func={0})".format(ast.dump(LambdaExpression.parse(self.func)))
+
+
+class WhereUnaryExpression(UnaryExpression):
+
+    def __init__(self, T, exp, func):
+        super(WhereUnaryExpression, self).__init__(T, WhereExpression(T, func), exp)
+
+    def visit(self, visitor):
+        return visitor.visit_WhereUnaryExpression(self)
+
+
+
